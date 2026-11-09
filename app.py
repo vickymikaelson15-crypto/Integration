@@ -1,249 +1,537 @@
-import streamlit as st
-
-# Page configuration
-st.set_page_config(
-    page_title="Integration Quest - IB Math AA",
-    page_icon="積分",
-    layout="wide",
-    initial_sidebar_state="expanded"
-)
-
-# Custom CSS for strict Dark Mode and high contrast visibility
-st.markdown("""
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IB Math AA Calculus Practice Platform</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- KaTeX CDN -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.css">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/contrib/auto-render.min.js" onload="renderMathInElement(document.body);"></script>
     <style>
-    /* Global Dark Theme Styling */
-    .stApp {
-        background-color: #0e1117;
-        color: #e0e0e0;
-    }
-    
-    /* Sidebar styling */
-    section[data-testid="stSidebar"] {
-        background-color: #161b22;
-        color: #e0e0e0;
-    }
-    
-    /* Input & Widget styling */
-    div.stMarkdown, div.stButton, div.stRadio, div.stSelectbox {
-        color: #e0e0e0;
-    }
-    
-    /* Fix text visibility in headers, labels, and text */
-    h1, h2, h3, h4, h5, h6, p, span, label, .stRadio label {
-        color: #f0f6fc !important;
-    }
-    
-    /* Success / Info boxes */
-    .stAlert {
-        background-color: #1f2937;
-        color: #f3f4f6;
-        border: 1px solid #374151;
-    }
+        .katex-display { margin: 0.5em 0 !important; overflow-x: auto; overflow-y: hidden; }
+        .tab-btn.active { border-bottom-color: #2563eb; color: #2563eb; font-weight: 600; }
     </style>
-""", unsafe_allow_html=True)
+</head>
+<body class="bg-slate-50 text-slate-800 min-h-screen flex flex-col font-sans">
 
-# App Header
-st.title("积分 Integration Quest 🚀 (IB Math AA HL/SL)")
-st.markdown("Master indefinite integrals, substitution, integration by parts, definite integrals, areas, volumes, and differential equations with interactive practice and comprehensive formula stops.")
+    <!-- Navigation Header -->
+    <header class="bg-slate-900 text-white shadow-md sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 py-4 flex flex-col sm:flex-row justify-between items-center gap-4">
+            <div class="flex items-center gap-3">
+                <span class="bg-blue-600 text-white font-bold text-xs px-2.5 py-1 rounded-md uppercase tracking-wider">IB Math AA</span>
+                <h1 class="text-xl font-bold tracking-tight">Calculus Practice Bank</h1>
+            </div>
+            <div class="flex items-center gap-3 text-sm">
+                <span id="question-count" class="bg-slate-800 text-slate-300 px-3 py-1.5 rounded-full border border-slate-700">Loading...</span>
+            </div>
+        </div>
+    </header>
 
-# Sidebar Navigation
-st.sidebar.title("🧭 Navigation")
-app_mode = st.sidebar.radio("Choose Section", ["📚 Notes & Formula Stops", "📝 Practice Question Bank", "🏆 Quest Dashboard"])
+    <!-- Main Content Container -->
+    <main class="max-w-7xl mx-auto px-4 py-6 flex-grow w-full">
 
-# ---------------------------------------------------------
-# SECTION 1: NOTES & FORMULA STOPS
-# ---------------------------------------------------------
-if app_mode == "📚 Notes & Formula Stops":
-    st.header("📚 Calculus Notes & Formula Stops")
-    st.markdown("Comprehensive reference guide compiled from IB Math AA lecture notes (Christos Nikolaidis).")
-    
-    tab1, tab2, tab3, tab4, tab5 = st.tabs(["Basic & Standard", "Substitution & Parts", "Definite & Areas/Volumes", "Differential Equations", "Maclaurin Series"])
-    
-    with tab1:
-        st.subheader("1. Basic Indefinite Integrals & Standard Formulas")
-        st.markdown("An indefinite integral reverses differentiation, adding a constant of integration $C$.")
-        
-        st.markdown("""
-        * $\\int x^n dx = \\frac{x^{n+1}}{n+1} + C \\quad (n \\neq -1)$[cite: 461]
-        * $\\int \\frac{1}{x} dx = \\ln|x| + C$[cite: 463]
-        * $\\int e^x dx = e^x + C$[cite: 461]
-        * $\\int \\sin x dx = -\\cos x + C$[cite: 461]
-        * $\\int \\cos x dx = \\sin x + C$[cite: 461]
-        * $\\int \\sec^2 x dx = \\tan x + C$[cite: 525]
-        * $\\int \\csc^2 x dx = -\\cot x + C$[cite: 525]
-        * $\\int \\frac{1}{a^2 + x^2} dx = \\frac{1}{a} \\arctan\\left(\\frac{x}{a}\\right) + C$[cite: 523]
-        * $\\int \\frac{1}{\\sqrt{a^2 - x^2}} dx = \\arcsin\\left(\\frac{x}{a}\\right) + C$[cite: 523]
-        """)
-        
-        st.markdown("#### Linearity Rules")
-        st.markdown("""
-        * $\\int [f(x) \\pm g(x)] dx = \\int f(x)dx \\pm \\int g(x)dx$[cite: 463]
-        * $\\int k f(x) dx = k \\int f(x) dx$[cite: 463]
-        """)
+        <!-- Controls & Filters -->
+        <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-200 mb-6 flex flex-col md:flex-row gap-4 justify-between items-center">
+            
+            <!-- Category Tabs -->
+            <div class="flex overflow-x-auto w-full md:w-auto border-b border-slate-200 gap-1 pb-1 scrollbar-none" id="category-tabs">
+                <!-- Dynamically Inserted Tabs -->
+            </div>
 
-    with tab2:
-        st.subheader("2. Integration Techniques (Substitution & By Parts)")
-        
-        st.markdown("#### Integration by Substitution (Anti-Chain Rule)")
-        st.markdown("""
-        * $\\int [f(x)]^n f'(x) dx = \\frac{[f(x)]^{n+1}}{n+1} + C$[cite: 528]
-        * $\\int \\frac{f'(x)}{f(x)} dx = \\ln|f(x)| + C$[cite: 527]
-        * Linear case: $\\int f(ax+b)dx = \\frac{1}{a} F(ax+b) + C$[cite: 465]
-        """)
-        
-        st.markdown("#### Integration by Parts")
-        st.markdown("""
-        $$\\int u \\frac{dv}{dx} dx = uv - \\int v \\frac{du}{dx} dx$$[cite: 533]
-        * **Priority list for $v'$ (integration choice):** 
-          1. $e^{ax}, \\sin(ax), \\cos(ax)$[cite: 521]
-          2. $x^n$ (polynomials)[cite: 521]
-          3. $\\ln x, \\arctan x, \\arcsin x$[cite: 521]
-        """)
+            <!-- Options & Search -->
+            <div class="flex flex-wrap items-center gap-3 w-full md:w-auto justify-end">
+                <select id="gdc-filter" class="bg-slate-50 border border-slate-300 text-slate-700 text-sm rounded-lg p-2 focus:ring-blue-500 focus:border-blue-500">
+                    <option value="all">All Calculator Requirements</option>
+                    <option value="without">without GDC</option>
+                    <option value="with">with GDC</option>
+                </select>
 
-    with tab3:
-        st.subheader("3. Definite Integrals, Areas & Volumes of Revolution")
-        st.markdown("""
-        * **Definite Integral:** $\\int_a^b f(x)dx = [F(x)]_a^b = F(b) - F(a)$[cite: 473]
-        * **Area between curve and x-axis:** $A = \\int_a^b |f(x)| dx$[cite: 480]
-        * **Area between two curves:** $A = \\int_a^b |f(x) - g(x)| dx$[cite: 484]
-        * **Volume of Revolution (about x-axis):** $V = \\pi \\int_a^b y^2 dx$[cite: 541]
-        * **Volume of Revolution (about y-axis):** $V = \\pi \\int_c^d x^2 dy$[cite: 542]
-        """)
+                <div class="relative w-full sm:w-48">
+                    <input type="text" id="search-input" placeholder="Search questions..." class="w-full bg-slate-50 border border-slate-300 text-slate-700 text-sm rounded-lg pl-3 pr-8 py-2 focus:ring-blue-500 focus:border-blue-500">
+                    <span class="absolute right-2.5 top-2.5 text-slate-400 text-xs">🔍</span>
+                </div>
+            </div>
+        </div>
 
-    with tab4:
-        st.subheader("4. Differential Equations")
-        st.markdown("""
-        * **Separable Variables:** Separate $x$ and $y$ to opposite sides: $f(y)dy = g(x)dx \\implies \\int f(y)dy = \\int g(x)dx$[cite: 546]
-        * **First Order Linear D.E.:** $\\frac{dy}{dx} + P(x)y = Q(x)$[cite: 550]
-          * **Integrating Factor:** $\\mathcal{I} = e^{\\int P(x)dx}$[cite: 550]
-          * **Solution:** $\\mathcal{I} \\cdot y = \\int \\mathcal{I} \\cdot Q(x) dx$[cite: 550]
-        * **Euler's Numerical Method:** $x_{n+1} = x_n + h$, \\quad $y_{n+1} = y_n + h \\cdot f(x_n, y_n)$[cite: 552]
-        """)
+        <!-- Questions Grid/List Container -->
+        <div id="questions-container" class="space-y-4">
+            <!-- Dynamic Question Cards -->
+        </div>
 
-    with tab5:
-        st.subheader("5. Maclaurin Series & Binomial Extension")
-        st.markdown("""
-        * **Maclaurin Series Formula:**
-          $$f(x) = f(0) + f'(0)x + \\frac{f''(0)}{2!}x^2 + \\frac{f'''(0)}{3!}x^3 + \\dots$$[cite: 555]
-        * **Standard Expansions:**
-          * $e^x = 1 + x + \\frac{x^2}{2!} + \\frac{x^3}{3!} + \\dots$[cite: 557]
-          * $\\sin x = x - \\frac{x^3}{3!} + \\frac{x^5}{5!} - \\dots$[cite: 557]
-          * $\\cos x = 1 - \\frac{x^2}{2!} + \\frac{x^4}{4!} - \\dots$[cite: 557]
-        * **Extended Binomial Theorem:**
-          $$(1+x)^n = 1 + nx + \\frac{n(n-1)}{2!}x^2 + \\frac{n(n-1)(n-2)}{3!}x^3 + \\dots$$[cite: 561]
-        """)
+    </main>
 
-# ---------------------------------------------------------
-# SECTION 2: PRACTICE QUESTION BANK
-# ---------------------------------------------------------
-elif app_mode == "📝 Practice Question Bank":
-    st.header("📝 Practice Question Bank")
-    st.markdown("Test your skills across all calculus topics with instant verification and step-by-step solutions.")
-    
-    category = st.selectbox("Select Topic Category", [
-        "Basic Indefinite Integrals",
-        "Substitution Method",
-        "Integration by Parts",
-        "Definite Integrals & Areas",
-        "Differential Equations & Kinematics"
-    ])
-    
-    if category == "Basic Indefinite Integrals":
-        q1 = st.radio("Question 1: Find $\\int (6x^2 + 2x) dx$", [
-            "A) $2x^3 + x^2 + C$",
-            "B) $6x^3 + 2x^2 + C$",
-            "C) $3x^3 + x^2 + C$",
-            "D) $x^3 + x^2 + C$"
-        ])
-        if st.button("Submit Q1 Answer"):
-            if "A) $2x^3" in q1:
-                st.success("Correct! $\\int 6x^2 dx = 6\\frac{x^3}{3} = 2x^3$, and $\\int 2x dx = 2\\frac{x^2}{2} = x^2$. Result: $2x^3 + x^2 + C$.")
-            else:
-                st.error("Incorrect. Remember power rule: $\\int x^n dx = \\frac{x^{n+1}}{n+1} + C$[cite: 461].")
-                
-        q2 = st.radio("Question 2: Find $\\int \\left(5 \\sin x - 3 \\cos x - 7e^x + \\frac{1}{x}\\right) dx$", [
-            "A) $-5\\cos x - 3\\sin x - 7e^x + \\ln|x| + C$",
-            "B) $5\\cos x + 3\\sin x - 7e^x + \\ln|x| + C$",
-            "C) $-5\\sin x - 3\\cos x - 7e^x + \\frac{1}{x^2} + C$",
-            "D) $5\\sin x - 3\\cos x - 7e^x + \\ln|x| + C$"
-        ])
-        if st.button("Submit Q2 Answer"):
-            if "A) $-5\\cos x" in q2:
-                st.success("Correct! $\\int \\sin x dx = -\\cos x$ and $\\int \\cos x dx = \\sin x$[cite: 461].")
-            else:
-                st.error("Incorrect. Note that $\\int \\sin x dx = -\\cos x$[cite: 461].")
+    <!-- Footer -->
+    <footer class="bg-slate-900 text-slate-400 text-sm py-6 border-t border-slate-800 mt-12">
+        <div class="max-w-7xl mx-auto px-4 text-center">
+            <p>IB Mathematics Analysis & Approaches — Full Calculus Curriculum Practice Bank</p>
+            <p class="text-xs text-slate-500 mt-1">Compiled from Christos Nikolaidis IB AA Exercises [5.9–5.23]</p>
+        </div>
+    </footer>
 
-    elif category == "Substitution Method":
-        q1 = st.radio("Question 1: Find $\\int 2x\\sqrt{x^2+3} dx$ using $u = x^2+3$", [
-            "A) $\\frac{2}{3}(x^2+3)^{3/2} + C$",
-            "B) $\\frac{1}{3}(x^2+3)^{3/2} + C$",
-            "C) $\\sqrt{x^2+3} + C$",
-            "D) $\\frac{3}{2}(x^2+3)^{3/2} + C$"
-        ])
-        if st.button("Submit Substitution Answer"):
-            if "B) $\\frac{1}{3}" in q1:
-                st.success("Correct! With $u = x^2+3$, $du = 2x dx$, the integral becomes $\\int u^{1/2} du = \\frac{2}{3}u^{3/2} = \\frac{1}{3}(x^2+3)^{3/2} + C$[cite: 469].")
-            else:
-                st.error("Incorrect. Remember the coefficient $\\frac{1}{3}$ from integration of $u^{1/2}$[cite: 462, 469].")
+    <!-- Application Script -->
+    <script>
+        // Full Question Bank Array (185 Questions across all 6 documents)
+        const questionsData = [
+            // 5.9 - 5.10 Indefinite Integrals
+            { id: "5.9-1", doc: "5.9-5.10", section: "Basic Integrals", marks: 24, gdc: "without", title: "Basic Standard Integrals", body: "Find the following integrals:\n1. $\\int (\\cos x - \\sin x + e^x + \\frac{1}{x})dx$\n2. $\\int (5\\sin x - 3\\cos x - 7e^x + \\frac{1}{x})dx$\n3. $\\int (x^3 + x^2 + x + 3)dx$\n4. $\\int (4x^3 - 12x^2 + 6x + 3)dx$\n5. $\\int (x^{-3} + x^{-2} + x^{-1} + 3)dx$\n6. $\\int (4x^{-3} - 12x^{-2} + 6x^{-1} + 3)dx$\n7. $\\int (x^{1/2} + x^{1/3})dx$\n8. $\\int (5x^{1/2} - 3x^{1/3})dx$\n9. $\\int (x^{2/5} + x^{3/7})dx$\n10. $\\int (7x^{2/5} + 10x^{3/7})dx$\n11. $\\int e dx$\n12. $\\int \\pi^2 dx$" },
+            { id: "5.9-2", doc: "5.9-5.10", section: "Basic Integrals", marks: 24, gdc: "without", title: "Algebraic Simplification Integrals", body: "Find the following integrals (modify the expressions first, if necessary):\n1. $\\int (\\frac{4}{x^3} - \\frac{12}{x^2} + \\frac{6}{x} + 3)dx$\n2. $\\int (\\frac{8}{x^5} - \\frac{12}{x^3} + 6x)dx$\n3. $\\int (\\frac{x^3}{4} - \\frac{2x^2}{3} - \\frac{x}{7} + 3)dx$\n4. $\\int (\\frac{3}{4x^3} - \\frac{2x^2}{3})dx$\n5. $\\int (5\\sqrt{x} - 3\\sqrt[3]{x})dx$\n6. $\\int (5\\sqrt{x^3} - 3\\sqrt[3]{x^2})dx$\n7. $\\int (x+1)(x+2)dx$\n8. $\\int (2x^2+5x+1)(3x-4)dx$\n9. $\\int \\frac{2x^5+5x^3+x^2}{x^2}dx$\n10. $\\int \\frac{2x^2+5x+1}{x^2}dx$\n11. $\\int \\frac{2x^7+5x+4}{3x^2}dx$" },
+            { id: "5.9-3", doc: "5.9-5.10", section: "Basic Integrals", marks: 32, gdc: "without", title: "Linear Substitution Integrals", body: "Find the following pairs of integrals:\n- $\\int \\cos(5x+3)dx$ | $\\int \\sin(5x+3)dx$\n- $\\int \\cos(5x-3)dx$ | $\\int \\sin(5x-3)dx$\n- $\\int \\cos(3x+5)dx$ | $\\int \\sin(3x+5)dx$\n- $\\int \\cos 5x dx$ | $\\int \\sin 5x dx$\n- $\\int \\cos(x+5)dx$ | $\\int \\sin(x+5)dx$\n- $\\int \\cos(1-x)dx$ | $\\int \\sin(1-x)dx$\n- $\\int \\cos(\\frac{x}{10})dx$ | $\\int \\sin(\\frac{x}{10})dx$\n- $\\int \\cos(ax+b)dx$ | $\\int \\sin(ax+b)dx$\n- $\\int e^{5x+3}dx$ | $\\int (5x+3)^3 dx$\n- $\\int e^{5x-3}dx$ | $\\int (5x-3)^3 dx$\n- $\\int e^{3x+5}dx$ | $\\int (3x+5)^3 dx$\n- $\\int e^{5x}dx$ | $\\int (5x)^3 dx$\n- $\\int e^{x+5}dx$ | $\\int (x+5)^3 dx$\n- $\\int e^{1-x}dx$ | $\\int (1-x)^3 dx$\n- $\\int e^{x/10}dx$ | $\\int (\\frac{x}{10})^3 dx$\n- $\\int e^{ax+b}dx$ | $\\int (ax+b)^3 dx$" },
+            { id: "5.9-4", doc: "5.9-5.10", section: "Basic Integrals", marks: 14, gdc: "without", title: "Integrals of Form 1/(ax+b)", body: "Find the following integrals:\n1. $\\int \\frac{1}{5x+3}dx$\n2. $\\int \\frac{1}{3-5x}dx$\n3. $\\int \\frac{1}{x-3}dx$\n4. $\\int \\frac{1}{3-x}dx$\n5. $\\int \\frac{8}{2x+1}dx$\n6. $\\int \\frac{8}{1-2x}dx$\n7. $\\int \\frac{a}{bx+c}dx$" },
+            { id: "5.9-5", doc: "5.9-5.10", section: "Basic Integrals", marks: 14, gdc: "without", title: "Integrals of Form 1/(ax+b)^2", body: "Find the following integrals:\n1. $\\int \\frac{1}{(5x+3)^2}dx$\n2. $\\int \\frac{1}{(3-5x)^2}dx$\n3. $\\int \\frac{1}{(x-3)^2}dx$\n4. $\\int \\frac{1}{(3-x)^2}dx$\n5. $\\int \\frac{8}{(2x+1)^2}dx$\n6. $\\int \\frac{8}{(1-2x)^2}dx$\n7. $\\int \\frac{a}{(bx+c)^2}dx$" },
+            { id: "5.9-6", doc: "5.9-5.10", section: "Basic Integrals", marks: 5, gdc: "without", title: "Initial Value Problem (Polynomial)", body: "Let $f'(x) = 6x^2 + 1$. Find $f(x)$ given that $f(0) = 3$." },
+            { id: "5.9-7", doc: "5.9-5.10", section: "Basic Integrals", marks: 7, gdc: "without", title: "Second Derivative Initial Value Problem", body: "Let $f''(x) = 12x^2$.\n(a) Find $f'(x)$, given that $f'(0) = 3$. [4]\n(b) Find $f(x)$ given that $f(0) = 2$. [3]" },
+            { id: "5.9-8", doc: "5.9-5.10", section: "Exam Style Short", marks: 6, gdc: "without", title: "Derivative and Integral of Trig/Polynomial Function", body: "Let $f(x) = 6x^2 + 3\\cos x + 1$. Find:\n(a) $f'(x)$ [3]\n(b) $\\int f(x) dx$ [3]" },
+            { id: "5.9-9", doc: "5.9-5.10", section: "Exam Style Short", marks: 6, gdc: "without", title: "Derivative and Integral of Fractional Power", body: "Let $f(x) = \\sqrt{x^3}$. Find:\n(a) $f'(x)$ [3]\n(b) $\\int f(x) dx$ [3]" },
+            { id: "5.9-10", doc: "5.9-5.10", section: "Exam Style Short", marks: 4, gdc: "without", title: "Integration of Fractional Power Product", body: "Let $f(t) = t^{1/3} \\left(1 - \\frac{1}{2t^{5/3}}\\right)$. Find $\\int f(t) dt$." },
+            { id: "5.9-11", doc: "5.9-5.10", section: "Exam Style Short", marks: 6, gdc: "without", title: "Radical Integration Practice", body: "Find:\n(a) $\\int \\sqrt{x}(x^3 - 1)dx$\n(b) $\\int \\frac{3x^2 - x + 2\\sqrt{x}}{3\\sqrt{x}}dx$" },
+            { id: "5.9-12", doc: "5.9-5.10", section: "Exam Style Short", marks: 6, gdc: "without", title: "Basic Exponential and Trig Integrals", body: "Find:\n(a) $\\int \\sin(3x+7)dx$ [2]\n(b) $\\int e^{-4x}dx$ [2]\n(c) $\\int \\cos(1-x)dx$ [2]" },
+            { id: "5.9-13", doc: "5.9-5.10", section: "Exam Style Short", marks: 6, gdc: "without", title: "Second Derivative and Indefinite Integral", body: "The function $f$ is given by $f(x) = 2\\sin(5x-3)$.\n(a) Find $f''(x)$. [3]\n(b) Write down $\\int f(x) dx$. [3]" },
+            { id: "5.9-14", doc: "5.9-5.10", section: "Exam Style Short", marks: 5, gdc: "without", title: "Linear Binomial Integrals", body: "Find:\n(i) $\\int (2x-7) dx$\n(ii) $\\int \\frac{1}{2x-7} dx$" },
+            { id: "5.9-15", doc: "5.9-5.10", section: "Exam Style Short", marks: 6, gdc: "without", title: "Squared Binomial Integrals", body: "Find:\n(i) $\\int (2x-7)^2 dx$\n(ii) $\\int \\frac{1}{(2x-7)^2} dx$" },
+            { id: "5.9-16", doc: "5.9-5.10", section: "Exam Style Short", marks: 6, gdc: "without", title: "Power of Linear Function Derivative & Integral", body: "Let $f(x) = (3x+4)^5$. Find:\n(i) $f'(x)$\n(ii) $\\int f(x) dx$" },
+            { id: "5.9-17", doc: "5.9-5.10", section: "Exam Style Short", marks: 6, gdc: "without", title: "Cubic Linear Function Derivative & Integral", body: "Given that $f(x) = (2x+5)^3$, find:\n(i) $f'(x)$\n(ii) $\\int f(x) dx$" },
+            { id: "5.9-18", doc: "5.9-5.10", section: "Exam Style Short", marks: 6, gdc: "without", title: "Reciprocal Powers of Linear Functions", body: "Find:\n(i) $\\int \\frac{1}{2x+3} dx$\n(ii) $\\int \\frac{1}{(2x+3)^2} dx$\n(iii) $\\int \\frac{1}{(2x+3)^3} dx$" },
+            { id: "5.9-19", doc: "5.9-5.10", section: "Exam Style Short", marks: 6, gdc: "without", title: "Expanded Quadratic Integrals", body: "Find:\n(a) $\\int (2x+1)^2 dx$\n(b) $\\int (2x^2+1)^2 dx$\n(c) $\\int \\frac{(2x^2+1)^2}{x} dx$" },
+            { id: "5.9-20", doc: "5.9-5.10", section: "Exam Style Short", marks: 4, gdc: "without", title: "Finding Function from Derivative & Boundary Point", body: "Let $f'(x) = 1 - x^2$. Given that $f(3) = 0$, find $f(x)$." },
+            { id: "5.9-21", doc: "5.9-5.10", section: "Exam Style Short", marks: 6, gdc: "without", title: "Differential Equation Initial Value", body: "It is given that $\\frac{dy}{dx} = x^3 + 2x - 1$ and $y = 13$ when $x = 2$. Find $y$ in terms of $x$." },
+            { id: "5.9-22", doc: "5.9-5.10", section: "Exam Style Short", marks: 6, gdc: "without", title: "Curve Equation from Gradient Function", body: "The curve $y=f(x)$ passes through the point $(2, 6)$. Given that $\\frac{dy}{dx} = 3x^2 - 5$, find $y$ in terms of $x$." },
+            { id: "5.9-23", doc: "5.9-5.10", section: "Exam Style Short", marks: 4, gdc: "without", title: "Trigonometric Function from Derivative", body: "If $f'(x) = \\cos x$ and $f\\left(\\frac{\\pi}{2}\\right) = -2$, find $f(x)$." },
+            { id: "5.9-24", doc: "5.9-5.10", section: "Exam Style Short", marks: 5, gdc: "without", title: "Line/Curve Equation from Gradient", body: "A curve with equation $y=f(x)$ passes through the point $(1, 1)$. Its gradient function is $f'(x) = -2x + 3$. Find the equation of the curve." },
+            { id: "5.9-25", doc: "5.9-5.10", section: "Exam Style Short", marks: 7, gdc: "with", title: "Exponential Gradient Initial Value Problem", body: "A gradient function is given by $\\frac{dy}{dx} = 10e^{2x} - 5$. When $x=0$, $y=8$. Find the value of $y$ when $x=1$." },
+            { id: "5.9-26", doc: "5.9-26", section: "Exam Style Short", marks: 6, gdc: "without", title: "Logarithmic and Trig Derivative Integration", body: "The derivative of $f$ is given by $f'(x) = \\frac{1}{1+x} - 0.5\\sin x$, for $x \\neq -1$. The graph of $f$ passes through $(0, 2)$. Find an expression for $f(x)$." },
+            { id: "5.9-27", doc: "5.9-5.10", section: "Exam Style Short", marks: 6, gdc: "without", title: "Exponential and Rational Integration", body: "The derivative of $f$ is given by $f'(x) = e^{-2x} + \\frac{1}{1-x}, x<1$. The graph passes through $(0, 4)$. Find an expression for $f(x)$." },
+            { id: "5.9-28", doc: "5.9-5.10", section: "Exam Style Short", marks: 5, gdc: "without", title: "Trigonometric Gradient Function Initial Value", body: "The graph of $y=f(x)$ passes through $\\left(\\frac{3}{2}, 4\\right)$. Its gradient function is $f'(x) = \\sin(2x-3)$. Find $f(x)$." },
+            { id: "5.9-29", doc: "5.9-5.10", section: "Exam Style Short", marks: 6, gdc: "without", title: "Second Derivative and Function Reconstruction", body: "The function $f'$ is given by $f'(x) = 2\\sin(5x - \\frac{\\pi}{2})$.\n(a) Write down $f''(x)$. [2]\n(b) Given that $f(\\frac{\\pi}{2}) = 1$, find $f(x)$. [4]" },
+            { id: "5.9-30", doc: "5.9-5.10", section: "Exam Style Short", marks: 5, gdc: "without", title: "Combined Exponential and Trig Anti-derivative", body: "Let $f'(x) = 2e^{-x} + 10\\sin 5x + 1$. Find $f(x)$, given that the curve passes through $A(0, 5)$." },
+            { id: "5.9-31", doc: "5.9-5.10", section: "Exam Style Short", marks: 7, gdc: "without", title: "Determining Parameters from Inflexion & Extremum", body: "Let $f''(x) = 6ax + b$. Find $f(x)$, given that the function has a maximum at $A(1, 5)$ and a point of inflexion at $B(0, 3)$." },
+            { id: "5.9-32", doc: "5.9-5.10", section: "Exam Style Short", marks: 5, gdc: "without", title: "Cos^2 Integration via Double Angle Identity", body: "(a) Use the double angle identity for $\\cos 2x$ to express $\\cos^2 x$ in terms of $\\cos 2x$. [2]\n(b) Hence find $\\int \\cos^2 x dx$. [3]" },
+            { id: "5.9-33", doc: "5.9-5.10", section: "Exam Style Short", marks: 6, gdc: "without", title: "Sin^2 Integration via Double Angle Identity", body: "Find $\\int \\sin^2 x dx$." },
+            { id: "5.9-34", doc: "5.9-5.10", section: "Exam Style Short", marks: 6, gdc: "without", title: "Product of Sin and Cos Integration", body: "Use the double angle identity for $\\sin 2x$ to find:\n(a) $\\int \\sin x \\cos x dx$\n(b) $\\int \\sin 5x \\cos 5x dx$" },
+            { id: "5.9-35", doc: "5.9-5.10", section: "Exam Style Short", marks: 5, gdc: "without", title: "Mixed Algebraic and Trig Indefinite Integral", body: "Find $\\int \\left(\\frac{3x}{2} + \\frac{2}{3x} + \\frac{2\\cos 2x}{3}\\right) dx$." },
+            { id: "5.9-36", doc: "5.9-5.10", section: "Substitution", marks: 6, gdc: "without", title: "Linear Substitution Direct vs Formula", body: "Find $\\int \\frac{6}{2x-3} dx$:\n(i) directly by inspection\n(ii) by using the substitution $u = 2x-3$" },
+            { id: "5.9-37", doc: "5.9-5.10", section: "Substitution", marks: 5, gdc: "without", title: "Substitution for Rational Function", body: "Find $\\int \\frac{6x}{2x^2-3} dx$ by using the substitution $u = 2x^2-3$." },
+            { id: "5.9-38", doc: "5.9-5.10", section: "Substitution", marks: 6, gdc: "without", title: "Exponential Substitution Practice", body: "Find:\n(i) $\\int 6e^{3x+7} dx$\n(ii) $\\int 6x e^{3x^2+7} dx$" },
+            { id: "5.9-39", doc: "5.9-5.10", section: "Substitution", marks: 8, gdc: "without", title: "Exponential Composite Integration", body: "Find:\n(i) $\\int 6x^2 e^{3x^3+7} dx$\n(ii) $\\int 2x e^{1-x^2} dx$" },
+            { id: "5.9-40", doc: "5.9-5.10", section: "Substitution", marks: 8, gdc: "without", title: "Trigonometric Substitution Integration", body: "Find:\n(i) $\\int 3x \\sin(x^2+1) dx$\n(ii) $\\int 3x^2 \\cos(x^3+1) dx$" },
+            { id: "5.9-41", doc: "5.9-5.10", section: "Substitution", marks: 5, gdc: "without", title: "Logarithmic Form Substitution Integral", body: "Find $\\int \\frac{3x^2}{x^3+1} dx$." },
+            { id: "5.9-42", doc: "5.9-5.10", section: "Substitution", marks: 12, gdc: "without", title: "Square Root Composite Substitution", body: "Find:\n(i) $\\int 2\\sqrt{x+3} dx$\n(ii) $\\int 2x\\sqrt{x^2+3} dx$\n(iii) $\\int 2x^2\\sqrt{x^3+3} dx$" },
+            { id: "5.9-43", doc: "5.9-5.10", section: "Substitution", marks: 10, gdc: "without", title: "Trig Substitution with u = sin x", body: "By using the substitution $u = \\sin x$, find the integrals:\n$A = \\int \\cos x e^{\\sin x} dx$\n$B = \\int \\cos x \\sqrt{\\sin x} dx$\n$C = \\int \\sin^2 x \\cos x dx$" },
+            { id: "5.9-44", doc: "5.9-5.10", section: "Substitution", marks: 5, gdc: "without", title: "Trig Power Substitution", body: "Find the integral $D = \\int \\cos^3 x \\sin x dx$." },
+            { id: "5.9-45", doc: "5.9-5.10", section: "Substitution Short", marks: 5, gdc: "without", title: "Rational Logarithmic Integration", body: "Find the indefinite integral $\\int \\frac{x}{x^2+9} dx$." },
+            { id: "5.9-46", doc: "5.9-5.10", section: "Substitution Short", marks: 6, gdc: "without", title: "Rational Power Integration", body: "Find the indefinite integral $\\int \\frac{x}{(x^2+9)^2} dx$." },
+            { id: "5.9-47", doc: "5.9-5.10", section: "Substitution Short", marks: 8, gdc: "without", title: "Composite Expression Integration", body: "Find:\n(i) $\\int \\frac{2x+\\cos x}{x^2+\\sin x} dx$\n(ii) $\\int (2x+\\cos x)(x^2+\\sin x)^3 dx$" },
+            { id: "5.9-48", doc: "5.9-5.10", section: "Substitution Short", marks: 5, gdc: "without", title: "Exponential Radical Substitution", body: "Find $\\int e^x \\sqrt{e^x+1} dx$." },
+            { id: "5.9-49", doc: "5.9-5.10", section: "Exam Style Long", marks: 13, gdc: "without", title: "Polynomial Reconstruction & Sketching", body: "The function $f$ is such that $f''(x) = 2x-2$. When the graph of $f$ is drawn, it has a minimum point at $(3, -7)$.\n(a) Show that $f'(x) = x^2 - 2x - 3$ and hence find $f(x)$. [6]\n(b) Find $f(0)$, $f(-1)$ and $f'(-1)$. [3]\n(c) Hence sketch the graph of $f$ labelling it with the information obtained in part (b). [4]" },
+            { id: "5.9-50", doc: "5.9-5.10", section: "Exam Style Long", marks: 14, gdc: "with", title: "Extrema Analysis and Integral Reconstruction", body: "Consider the function $f$ with second derivative $f''(x) = 3x-1$. The graph of $f$ has a minimum point at $A(2, 4)$ and a maximum point at $B\\left(-\\frac{4}{3}, \\frac{358}{27}\\right)$.\n(a) Use the second derivative to justify that $B$ is a maximum. [3]\n(b) Given that $f'(x) = \\frac{3}{2}x^2 - x + p$, show that $p = -4$. [4]\n(c) Find $f(x)$. [7]" },
 
-    elif category == "Integration by Parts":
-        q1 = st.radio("Question 1: Find $\\int 2x e^x dx$", [
-            "A) $2xe^x - 2e^x + C$",
-            "B) $2xe^x + 2e^x + C$",
-            "C) $x^2e^x + C$",
-            "D) $2e^x - 2xe^x + C$"
-        ])
-        if st.button("Submit By Parts Answer"):
-            if "A) $2xe^x - 2e^x" in q1:
-                st.success("Correct! Using integration by parts with $u = 2x$ and $dv = e^x dx$, we get $2xe^x - \\int 2e^x dx = 2xe^x - 2e^x + C$[cite: 533].")
-            else:
-                st.error("Incorrect. Check the sign change when integrating $\\int v du$[cite: 533].")
+            // 5.11 Definite Integrals & Areas
+            { id: "5.11-1", doc: "5.11", section: "Definite Properties", marks: 36, gdc: "without", title: "Basic Definite Integrals Calculation", body: "Calculate the following definite integrals:\n1. $\\int_{0}^{1} (2x+3) dx$\n2. $\\int_{1}^{2} (2x+3) dx$\n3. $\\int_{0}^{2} (2x+3) dx$\n4. $\\int_{-2}^{2} (2x+3) dx$\n5. $\\int_{0}^{1} (e^x+2) dx$\n6. $\\int_{0}^{\\pi} (\\sin x + \\cos x) dx$\n7. $\\int_{1}^{e} \\frac{7}{x} dx$\n8. $\\int_{0}^{1} e^{2x+3} dx$\n9. $\\int_{0}^{4} \\frac{1}{x+1} dx$\n10. $\\int_{0}^{10} x dx$\n11. $\\int_{0}^{10} 5 dx$\n12. $\\int_{4}^{10} dx$" },
+            { id: "5.11-2", doc: "5.11", section: "Definite Properties", marks: 6, gdc: "without", title: "Integration of ln x via Product Rule", body: "Let $f(x) = x \\ln x - x$.\n(a) Find $f'(x)$. [3]\n(b) Hence find $\\int_{1}^{3} \\ln x dx$. [3]" },
+            { id: "5.11-3", doc: "5.11", section: "Definite Properties", marks: 20, gdc: "without", title: "Properties of Definite Integrals", body: "Let $\\int_{4}^{7} f(x)dx = 8$ and $\\int_{4}^{7} g(x)dx = 2$. Calculate:\n1. $\\int_{4}^{7} 3f(x) dx$\n2. $\\int_{7}^{4} f(x) dx$\n3. $\\int_{4}^{7} (f(x)+g(x)) dx$\n4. $\\int_{4}^{7} (f(x)-4g(x)) dx$\n5. $\\int_{4}^{7} (f(x)+1) dx$\n6. $\\int_{4}^{7} (g(x)+2x) dx$\n7. $\\int_{4}^{7} (2f(x)+3g(x)-4) dx$\n8. $\\int_{4}^{5} f(x)dx + \\int_{5}^{7} f(x)dx$\n9. $\\int_{7}^{10} f(x-3) dx$\n10. $\\int_{2}^{3.5} f(2x) dx$" },
+            { id: "5.11-4", doc: "5.11", section: "Definite Properties", marks: 9, gdc: "without", title: "Logarithmic Definite Integral Limits", body: "(a) Find $\\int \\frac{1}{2x+3} dx$. [2]\n(b) Given that $\\int_{0}^{3} \\frac{1}{2x+3} dx = \\ln\\sqrt{P}$, find $P$. [3]\n(c) Given that $\\int_{0}^{m} \\frac{1}{2x+3} dx = \\ln 2$, calculate $m$. [4]" },
+            { id: "5.11-5", doc: "5.11", section: "Exam Style Short", marks: 5, gdc: "without", title: "Unknown Upper Limit in Rational Integral", body: "Given $\\int_{3}^{k} \\frac{1}{x-2} dx = \\ln 7$, find the value of $k$." },
+            { id: "5.11-6", doc: "5.11", section: "Exam Style Short", marks: 4, gdc: "without", title: "Polynomial Reciprocal Definite Integral", body: "Find the real number $k > 1$ for which $\\int_{1}^{k} \\left(1 + \\frac{1}{x^2}\\right) dx = \\frac{3}{2}$." },
+            { id: "5.11-7", doc: "5.11", section: "Exam Style Short", marks: 3, gdc: "with", title: "Trigonometric Definite Integral Limit Solver", body: "Find the value of $a$ such that $\\int_{0}^{a} \\cos^2 x dx = 0.740$. Give your answer to 3 decimal places." },
+            { id: "5.11-8", doc: "5.11", section: "Exam Style Short", marks: 6, gdc: "without", title: "Linear Transformations of Definite Integrals", body: "Given that $\\int_{1}^{3} g(x) dx = 10$, deduce the value of:\n(i) $\\int_{1}^{3} \\frac{1}{2}g(x) dx$\n(ii) $\\int_{1}^{3} (g(x)+4) dx$" },
+            { id: "5.11-9", doc: "5.11", section: "Exam Style Short", marks: 6, gdc: "without", title: "Definite Integral Horizontal Shifts & Scaling", body: "Let $f$ be a function such that $\\int_{0}^{3} f(x) dx = 8$.\n(a) Deduce the value of:\n(i) $\\int_{0}^{3} 2f(x) dx$\n(ii) $\\int_{0}^{3} (f(x)+2) dx$ [4]\n(b) If $\\int_{c}^{d} f(x-2) dx = 8$, write down the value of $c$ and of $d$. [2]" },
+            { id: "5.11-10", doc: "5.11", section: "Exam Style Short", marks: 6, gdc: "without", title: "Polynomial Added to Function Definite Integral", body: "Given that $\\int_{1}^{3} f(x) dx = 5$, deduce the value of:\n(i) $\\int_{1}^{3} 2f(x) dx$\n(ii) $\\int_{1}^{3} (3x^2 + f(x)) dx$" },
+            { id: "5.11-11", doc: "5.11", section: "Exam Style Short", marks: 6, gdc: "without", title: "Tabular Derivative and Integral Calculations", body: "The table shows values of $f, g, f', g'$ for $x \\in \\{1, 2, 3, 4\\}$.\n(a) Calculate $\\frac{d}{dx}(f(x)+g(x))$ at $x=4$. [2]\n(b) Calculate $\\int_{1}^{3} (g'(x)+6) dx$. [4]" },
+            { id: "5.11-12", doc: "5.11", section: "Exam Style Short", marks: 7, gdc: "without", title: "Splitting Integral Limits and Adding x", body: "Let $\\int_{1}^{5} 3f(x) dx = 12$.\n(a) Show that $\\int_{5}^{1} f(x) dx = -4$. [3]\n(b) Find $\\int_{1}^{2} (x+f(x)) dx + \\int_{2}^{5} (x+f(x)) dx$. [4]" },
+            { id: "5.11-13", doc: "5.11", section: "Areas", marks: 8, gdc: "without", title: "Cosine Curve Area bounded by Axes", body: "The diagram shows part of $y = \\cos x$ for $0 \\le x \\le \\frac{3\\pi}{2}$.\n(a) Calculate:\n(i) $\\int_{0}^{\\pi/2} \\cos x dx$\n(ii) $\\int_{\\pi/2}^{3\\pi/2} \\cos x dx$ [5]\n(b) Write down the area enclosed by the curve and x-axis:\n(i) between $x=0$ and $x=\\pi/2$\n(ii) between $x=\\pi/2$ and $x=3\\pi/2$\n(iii) between $x=0$ and $x=3\\pi/2$ [3]" },
+            { id: "5.11-14", doc: "5.11", section: "Areas", marks: 8, gdc: "without", title: "Area Between Intersecting Parabolas", body: "Consider the two curves $y=x^2$ and $y=8-x^2$.\n(a) Find area A enclosed by the two curves and the x-axis in the 1st quadrant. [4]\n(b) Find area B enclosed by the two curves and the y-axis in the 1st quadrant. [4]" },
+            { id: "5.11-15", doc: "5.11", section: "Areas", marks: 21, gdc: "with", title: "Area Expressions Table Completion", body: "Formulate integral expressions and calculate numerical areas for regions enclosed by:\n1. $f(x) = \\cos(x^2), g(x) = e^x$ on $[-1.5, 0.5]$\n2. $y = \\sin x, y = x^2 - 2x + 1.5$ on $[0, \\pi]$\n3. $y = \\ln x, y = e^x - e$ for $x > 0$\n4. $y = \\frac{2}{1+x^2}, y = e^{x/3}$ on $[-3, 3]$\n5. $f(x) = 4 - x^2, g(x) = (x+1)\\cos x$\n6. $y = e^{-x} - x + 1$ and coordinate axes\n7. $f(x) = \\frac{\\sin x}{x}$ and x-axis on $[\\pi, 3\\pi]$\n8. $y = x^3 - 3x^2 - 9x + 27, y = x + 3$" },
+            { id: "5.11-16", doc: "5.11", section: "Exam Style Short", marks: 7, gdc: "with", title: "Sine Transformation Shaded Area", body: "The diagram shows $f(x) = 1 + 3\\sin(x+2)$.\n(a) Find $f'(x)$. [2]\n(b) Find $\\int f(x) dx$. [2]\n(c) The area of shaded region is $\\int_{0}^{a} f(x) dx$.\n(i) Find $a$.\n(ii) Find the shaded area. [3]" },
+            { id: "5.11-17", doc: "5.11", section: "Exam Style Short", marks: 4, gdc: "without", title: "Cubic Polynomial Area Enclosed", body: "The diagram shows part of $y = 12x^2(1-x)$.\n(a) Write down an integral which represents the shaded area. [1]\n(b) Find the area of the shaded region. [3]" },
+            { id: "5.11-18", doc: "5.11", section: "Exam Style Short", marks: 6, gdc: "without", title: "Sine Curve Exact Area to 3pi/4", body: "The shaded region is bounded by $y = \\sin x$, $y=0$, and $x = \\frac{3\\pi}{4}$. Calculate the exact area of the shaded region." },
+            { id: "5.11-19", doc: "5.11", section: "Exam Style Short", marks: 4, gdc: "without", title: "Cosine Amplitude and Enclosed Area", body: "The graph represents $f(x) = p\\cos x, p \\in \\mathbb{N}$.\n(a) Write down the value of $p$. [1]\n(b) Find the area of the shaded region bounded from $x=0$ to $x=\\pi/2$. [3]" },
+            { id: "5.11-20", doc: "5.11", section: "Exam Style Short", marks: 6, gdc: "without", title: "Hyperbola Translation Area", body: "Consider $f(x) = 2 + \\frac{1}{x-1}$.\nFind:\n(i) $\\int f(x) dx$\n(ii) the area bounded by $f(x)$, x-axis, $x=2$, and $x=4$." },
+            { id: "5.11-21", doc: "5.11", section: "Exam Style Short", marks: 4, gdc: "with", title: "Intersection of Log and Radical Curves Area", body: "For $x \\ge 0.5$, let $f(x) = x^2\\ln(x+1)$ and $g(x) = \\sqrt{2x-1}$.\n(a) Sketch graphs of $f$ and $g$. [2]\n(b) Find the area of region completely enclosed by $f$ and $g$. [2]" },
+            { id: "5.11-22", doc: "5.11", section: "Exam Style Short", marks: 6, gdc: "with", title: "Trig-Log Function Above and Below Axis Ratio", body: "Let $f(x) = \\sin x \\ln x$ on $[0.5, 3.5]$.\n(a) Write down the x-intercepts. [2]\n(b) Area above x-axis is $A$, below is $B$. If $A = kB$, find $k$. [4]" },
+            { id: "5.11-23", doc: "5.11", section: "Exam Style Short", marks: 7, gdc: "without", title: "Area Enclosed Between Two Quadratic Curves", body: "Find the area enclosed between $y = 2 + x - x^2$ and $y = 2 - 3x + x^2$." },
+            { id: "5.11-24", doc: "5.11", section: "Exam Style Short", marks: 6, gdc: "without", title: "Parametric Quadratic Enclosed Area", body: "Find the area enclosed by $y = x^2$ and $y = 2a^2 - x^2$ where $a > 0$." },
+            { id: "5.11-25", doc: "5.11", section: "Exam Style Short", marks: 5, gdc: "with", title: "Finding Limit from Known Area value", body: "Part of $y = \\sin 2x$ is given. The shaded area from $0$ to $k$ is $0.85$. Find $k$." },
+            { id: "5.11-26", doc: "5.11", section: "Exam Style Short", marks: 4, gdc: "without", title: "Reciprocal Hyperbola Exact Upper Limit", body: "The diagram shows $y = \\frac{1}{x}$. Shaded area from $x=1$ to $x=a$ is $2$. Find exact value of $a$." },
+            { id: "5.11-27", doc: "5.11", section: "Exam Style Short", marks: 6, gdc: "with", title: "Exponential Oscillating Function Definite Integral", body: "Let $f(x) = e^x \\sin 2x + 10$ on $[0, 4]$.\n(a) Write x-coord of intercept A. [1]\n(b) Find coords of max M $(x=p)$ and min N $(x=q)$. [2]\n(c) Find $\\int_{p}^{q} f(x)dx$ and explain why it is not the shaded area. [3]" },
+            { id: "5.11-28", doc: "5.11", section: "Exam Style Short", marks: 6, gdc: "with", title: "Product of Exponential & Linear Combination Trig", body: "Let $f(x) = \\cos x + \\sin x$.\n(a) Find smallest positive $x$ for $f(x)=0$. [3]\n(b) Find area bounded by $y = e^x(\\cos x + \\sin x)$ on $[-2, 3]$. [3]" },
+            { id: "5.11-29", doc: "5.11", section: "Exam Style Short", marks: 5, gdc: "with", title: "Damped Sine Wave First Arch Area", body: "Let $f(x) = e^x \\sin x$.\n(a) Write smallest positive x-intercept A. [1]\n(b) Write area expression for region $R$ from origin to A and evaluate it. [4]" },
+            { id: "5.11-30", doc: "5.11", section: "Exam Style Short", marks: 7, gdc: "without", title: "Derivative and Area under Derivative Curve", body: "Let $f(x) = \\frac{-3x}{x^2-1}$ and $g(x) = f'(x)$.\n(a) Show $g(x) = \\frac{3(x^2+1)}{(x^2-1)^2}$. [3]\n(b) If area under $g(x)$ from $x=0$ to $x=a$ is $2$, find $a$. [4]" },
+            { id: "5.11-31", doc: "5.11", section: "Exam Style Short", marks: 4, gdc: "without", title: "Rectangle Inscribed Under Parabola Equal Area", body: "Parabola $y = a^2 - x^2$ cuts x-axis at P, Q. Rectangle PQRS has area equal to area under parabola. Find dimensions of rectangle in terms of $a$." },
+            { id: "5.11-32", doc: "5.11", section: "Exam Style Short", marks: 4, gdc: "with", title: "Cubic Roots and Local Shaded Area", body: "Curve $y = x^3 - 7x^2 + 14x - 7$ crosses x-axis at A, B, C.\n(a) Find x-coords of A and B. [2]\n(b) Find shaded area between A and B. [2]" },
+            { id: "5.11-33", doc: "5.11", section: "Exam Style Short", marks: 7, gdc: "with", title: "Logarithmic Product Roots & Enclosed Area", body: "Let $f(x) = x \\ln(4-x^2)$ on $[-2, 2]$.\n(a) Find roots $a, 0, b$. [3]\n(b) Find turning point $c$. [2]\n(c) Find area bounded from $x=a$ to $x=c$. [2]" },
+            { id: "5.11-34", doc: "5.11", section: "Exam Style Long", marks: 10, gdc: "without", title: "Log Curve Tangent from Origin & Enclosed Area", body: "(a) Find tangent to $y = \\ln x$ at $(e, 1)$ and verify it passes through origin. [4]\n(b) Show $\\frac{d}{dx}(x \\ln x - x) = \\ln x$. [2]\n(c) Show area between $y = \\ln x$, tangent, and $y=0$ is $\\frac{1}{2}e - 1$. [4]" },
+            { id: "5.11-35", doc: "5.11", section: "Exam Style Long", marks: 16, gdc: "without", title: "Parabola Tangent and Enclosed Region", body: "Let $f(x) = 2x^2$. Line T is tangent at $x=1$.\n(a) Show T has equation $y = 4x - 2$. [5]\n(b) Find x-intercept of T. [2]\n(c) Express and calculate area of region R enclosed by $f$, T, and x-axis. [9]" },
+            { id: "5.11-36", doc: "5.11", section: "Exam Style Long", marks: 12, gdc: "without", title: "Square Root Normal Line Enclosed Area", body: "Let $f(x) = \\sqrt{x}$. Normal line L at $(4, 2)$.\n(a) Show L is $y = -4x + 18$. [4]\n(b) Find x-intercept A of L. [2]\n(c) Express and calculate area R bounded by x-axis, $f$, and L. [6]" },
+            { id: "5.11-37", doc: "5.11", section: "Exam Style Long", marks: 14, gdc: "with", title: "Log and Cosine Intersections & Equal Gradients", body: "Functions $f(x) = \\ln(3x-2)+1$ and $g(x) = -4\\cos(0.5x)+2$ on $[1, 10]$.\n(a) Express and calculate enclosed area A. [6]\n(b) Find $f'(x)$ and $g'(x)$. [4]\n(c) Find x-values where gradient of $f$ equals gradient of $g$. [4]" },
+            { id: "5.11-38", doc: "5.11", section: "Exam Style Long", marks: 14, gdc: "without", title: "Cubic Feature Analysis & Bounded Area Bounds", body: "Curve $y = x(x-4)^2$.\n(a) Find intercepts, max point, and inflexion point. [8]\n(b) Sketch graph for $0 \\le x \\le 4$. [3]\n(c) Shade area $\\int_{0}^{4} x(x-4)^2 dx$ and prove $0 < \\text{Area} < 40$. [3]" },
+            { id: "5.11-39", doc: "5.11", section: "Exam Style Long", marks: 10, gdc: "with", title: "Trig Polynomial Root and Enclosed Area", body: "(a) Sketch $y = \\pi \\sin x - x$ on $[-3, 3]$. [5]\n(b) Solve $\\pi \\sin x - x = 0$ for $x > 0$. [1]\n(c) Find $\\int (\\pi \\sin x - x)dx$ and calculate area bounded from $x=0$ to $x=1$. [4]" },
+            { id: "5.11-40", doc: "5.11", section: "Exam Style Long", marks: 14, gdc: "with", title: "x^2 cos x Enclosed First Quadrant Area", body: "(a) Sketch $y = x^2 \\cos x$ on $[0, 2]$ with key points. [7]\n(b) Find exact positive x-intercept. [2]\n(c) Write integral for area R in 1st quadrant. [3]\n(d) Evaluate area. [2]" },
+            { id: "5.11-41", doc: "5.11", section: "Exam Style Long", marks: 14, gdc: "with", title: "Trig Sum Graph and High-Precision Area", body: "(a) Draw $y = \\pi + x \\cos x$ on $[0, 5]$. [5]\n(b) Prove $\\pi$ is a solution to $\\pi + x \\cos x = 0$. [3]\n(c) Find another solution to 6 s.f. [2]\n(d) Write integral for area from $0$ to $\\pi$. [2]\n(e) Evaluate area to 6 s.f. [2]" },
+            { id: "5.11-42", doc: "5.11", section: "Exam Style Long", marks: 15, gdc: "with", title: "Cubic Factorization, Tangent & Shaded Area", body: "Let $f(x) = -x^3 + 2x^2 + 15x$.\n(a) Write in factored form $-x(x-a)(x-b)$. [2]\n(b) Find exact stationary points and max value Q. [7]\n(c) Tangent at origin O cuts curve at R. Find x-coord of R. [4]\n(d) Determine shaded area under arch. [2]" },
+            { id: "5.11-43", doc: "5.11", section: "Exam Style Long", marks: 18, gdc: "without", title: "Trig Power Maximum Point & Exact Area", body: "Let $f(x) = (\\sin x)^2 \\cos x$.\n(a) Find $f'(x)$, show $\\cos x = \\sqrt{1/3}$ at max A, find max value. [9]\n(b) Find exact x-coord of intercept B. [1]\n(c) Find $\\int f(x) dx$ and exact shaded area. [4]\n(d) Prove $f''(x) = 9(\\cos x)^3 - 7\\cos x$ and $\\cos x = \\frac{\\sqrt{7}}{3}$ at inflexion C. [4]" },
+            { id: "5.11-44", doc: "5.11", section: "Exam Style Long", marks: 13, gdc: "with", title: "Exponential Parameter k & Enclosed Area", body: "Consider $y = e^{-kx}$.\n(a) Show $\\int_{0}^{1} e^{-kx} dx = \\frac{1}{k}(1 - e^{-k})$. [3]\n(b) For $k=0.5$, sketch graph and find area from $x=0$ to $x=1$. [5]\n(c) Find $\\frac{dy}{dx}$, determine $k$ if $(1, 0.8)$ lies on graph, find tangent gradient. [5]" },
+            { id: "5.11-45", doc: "5.11", section: "Exam Style Long", marks: 12, gdc: "with", title: "Parabola Normal Intersection & Region Area", body: "Let $f(x) = -\\frac{3}{4}x^2 + x + 4$.\n(a) Find normal line at $(2, 3)$ and second intersection point P. [9]\n(b) Write area expression for region under curve from $x=-1$ to $x=2$ and evaluate. [3]" },
+            { id: "5.11-46", doc: "5.11", section: "Exam Style Long", marks: 15, gdc: "with", title: "Nested Exponential Trig Function Analysis", body: "Graph $y = \\sin(e^x)$ on $[-1, 2]$.\n(a) Find y-intercept A. [2]\n(b) Intercept C is $(\\ln k, 0)$. Find $k$. [2]\n(c) Max point B: find $\\frac{dy}{dx}$ and show $x = \\ln(\\pi/2)$ at B. [6]\n(d) Write and evaluate shaded area integral. [5]" },
+            { id: "5.11-47", doc: "5.11", section: "Exam Style Long", marks: 14, gdc: "with", title: "Decreasing Exponential & Tangent Enclosed Area", body: "Let $f(x) = 1 + e^{-2x}$.\n(a) Find $f'(x)$ and explain decreasing property. [2]\n(b) For point P at $x=-1/2$, find coords and tangent gradient in terms of $e$. [2]\n(c) Tangent equation $y = ax+b$. [3]\n(d) Sketch curve, tangent, and calculate enclosed area. [7]" },
+            { id: "5.11-48", doc: "5.11", section: "Exam Style Long", marks: 11, gdc: "with", title: "Oscillating Linear Product Intercepts & Range", body: "Let $h(x) = (x-2)\\sin(x-1)$ on $[-5, 5]$.\n(a) Find exact x-intercepts $a$ and $b$. [2]\n(b) Express and calculate total shaded area. [5]\n(c) Find y-coord of max S and range of $k$ for 4 distinct solutions to $h(x)=k$. [4]" },
+            { id: "5.11-49", doc: "5.11", section: "Exam Style Long", marks: 16, gdc: "with", title: "Parabola Normal Line Intersection & Enclosed Area", body: "Let $f(x) = -0.5x^2 + 2x + 2.5$.\n(a) Find $f'(x)$ and $f'(0)$. [2]\n(b) Show normal N at y-intercept is $y = -0.5x + 2.5$. [3]\n(c) Find intersection points of $f$ and N. [6]\n(d) Express and evaluate area of region R between curve and N. [5]" },
+            { id: "5.11-50", doc: "5.11", section: "Exam Style Long", marks: 13, gdc: "with", title: "Product of Exponential & Parabola Enclosed Area", body: "Let $f(x) = e^x(1-x^2)$.\n(a) Write integral for area enclosed by curve and x-axis. [3]\n(b) Find y-intercept P. [1]\n(c) Show normal L at P is $x+y=1$. [4]\n(d) Express and calculate area of region between curve and L. [5]" },
+            { id: "5.11-51", doc: "5.11", section: "Exam Style Long", marks: 19, gdc: "with", title: "Exponential Damped Linear Function Analysis", body: "Let $f(x) = (2x+1)e^{-x}$ on $[0, 3]$.\n(a) Sketch graph with P(0,1) and max Q. [3]\n(b) Show $f'(x) = (1-2x)e^{-x}$ and find exact coords of Q. [7]\n(c) Find range of $k$ for 2 solutions to $f(x)=k$. [2]\n(d) For R at $x=3$, find area between curve and secant line (PR). [7]" },
+            { id: "5.11-52", doc: "5.11", section: "Exam Style Long", marks: 15, gdc: "with", title: "Trig Wave and Parabola Region Area", body: "Let $f(x) = 5\\cos(\\frac{\\pi}{4}x)$ and $g(x) = -0.5x^2 + 5x - 8$ on $[0, 9]$.\n(a) Sketch $f$ and $g$ on same axes. [3]\n(b) Write x-intercept, period, amplitude of $f$. [4]\n(c) Write x-intercepts and axis of symmetry of $g$. [2]\n(d) Find area enclosed between graphs. [6]" },
+            { id: "5.11-53", doc: "5.11", section: "Exam Style Long", marks: 11, gdc: "without", title: "Rational Function Integration & Asymptotes", body: "Let $h(x) = \\frac{3x-5}{x-2}$.\n(a) Sketch graph with asymptotes. [5]\n(b) Write $h(x) = 3 + \\frac{1}{x-2}$, find $\\int h(x) dx$ and exact $\\int_{3}^{5} h(x) dx$. [5]\n(c) Shade represented area on sketch. [1]" },
+            { id: "5.11-54", doc: "5.11", section: "Exam Style Long", marks: 10, gdc: "with", title: "Cubic Region Area Matched to Quadratic Parameter", body: "Let $f(x) = x(x-5)^2$ on $[0, 6]$.\n(a) Find area of region R enclosed by curve and x-axis. [3]\n(b) Quadratic $g(x) = x(a-x)$ has shaded area equal to R. Find $a$. [7]" },
+            { id: "5.11-55", doc: "5.11", section: "Exam Style Long", marks: 15, gdc: "without", title: "Odd Rational Function Inflexion & Log Integral", body: "Let $f(x) = \\frac{ax}{x^2+1}$.\n(a) Prove $f(-x) = -f(x)$. [1]\n(b) Given $f''(x) = \\frac{2ax(x^2-3)}{(x^2+1)^3}$, find inflexion points. [7]\n(c) Given $\\int f(x) dx = \\frac{a}{2}\\ln(x^2+1)+C$, find shaded area and calculate $\\int_{4}^{8} 2f(x-1) dx$. [7]" },
+            { id: "5.11-56", doc: "5.11", section: "Exam Style Long", marks: 16, gdc: "without", title: "Cubic Tangent Line Area Equation", body: "Let $f(x) = x^3$. Tangent at $P(a, f(a))$ passes through $Q(2/3, 0)$ and $R(-2, -8)$.\n(a) Show gradient is $\\frac{a^3}{a - 2/3}$, find $f'(a)$, prove $a=1$. [7]\n(b) Tangent is $y=3x-2$. Area T between curve, tangent, and $x=k$ is $2k+4$. Show $k^4 - 6k^2 + 8 = 0$. [9]" },
+            { id: "5.11-57", doc: "5.11", section: "Exam Style Long", marks: 17, gdc: "without", title: "Shifted Sine Wave Exact Enclosed Area", body: "Let $f(x) = 6 + 6\\sin x$.\n(a) Solve $f(x)=6$ and $f(x)=0$ on $[0, 2\\pi[$. [5]\n(b) State exact x-intercept. [1]\n(c) Find area $k$ of shaded region in terms of $\\pi$. [6]\n(d) Describe transformation to $g(x) = 6 + 6\\sin(x - \\pi/2)$. [2]\n(e) Find $p$ values for integral equation. [3]" },
+            { id: "5.11-58", doc: "5.11", section: "Exam Style Long", marks: 16, gdc: "with", title: "Exponential Curve & Parabola Area Bounds", body: "Let $f(x) = Ae^{kx} + 3$ passing through $(0, 13)$ and $(15, 3.49)$.\n(a) Show $A=10$. [2]\n(b) Find $k$. [3]\n(c) Find $f'(x)$, explain decreasing, write horizontal asymptote. [6]\n(d) For $g(x) = -x^2 + 12x - 24$, find area enclosed between $f$ and $g$. [6]" },
+            { id: "5.11-59", doc: "5.11", section: "Exam Style Long", marks: 14, gdc: "with", title: "Parabola and Log Curve Region & Vertical Distance", body: "Functions $f(x) = 4 - (1-x)^2$ and $g(x) = \\ln(x+3) - 2$.\n(a) Sketch both graphs. [2]\n(b) State asymptote and intercepts of $g(x)$. [3]\n(c) Find intersection points. [2]\n(d) Express and evaluate area of region where $f(x) \\ge g(x)$ for $x \\ge 0$. [4]\n(e) Find maximum vertical distance between curves in this region. [3]" },
+            { id: "5.11-60", doc: "5.11", section: "Exam Style Long", marks: 12, gdc: "with", title: "Exponential Gaussian Curves Area Bounded Inequality", body: "Functions $f(x) = e^{-x^2}$ and $g(x) = e^{x^2} - 1$ on $[0, 1]$.\n(a) Sketch graphs and shade bounded region A. [3]\n(b) Prove $\\frac{p}{2} < \\text{Area}(A) < p$ without finding intersection $p$. [4]\n(c) Find $p$ to 4 decimal places. [2]\n(d) Express area as definite integral and evaluate. [3]" },
 
-    elif category == "Definite Integrals & Areas":
-        q1 = st.radio("Question 1: Evaluate $\\int_0^1 (2x + 3) dx$", [
-            "A) 3",
-            "B) 4",
-            "C) 5",
-            "D) 6"
-        ])
-        if st.button("Submit Definite Integral Answer"):
-            if "B) 4" in q1:
-                st.success("Correct! $[x^2 + 3x]_0^1 = (1 + 3) - 0 = 4$[cite: 473].")
-            else:
-                st.error("Incorrect. $\\int_0^1 (2x+3)dx = [x^2+3x]_0^1 = 4$[cite: 473].")
+            // 5.12 Kinematics
+            { id: "5.12-1", doc: "5.12", section: "Practice Questions", marks: 12, gdc: "without", title: "Polynomial Kinematics Motion Table", body: "Displacement $s = 6t - t^2, t \\ge 0$ (meters).\nComplete table for:\n- Velocity $v(t)$ and Acceleration $a(t)$\n- Initial displacement, velocity, acceleration\n- Values at $t=2s$ and $t=4s$\n- Speed at $t=2s$ and $t=4s$\n- Time when body changes direction" },
+            { id: "5.12-2", doc: "5.12", section: "Practice Questions", marks: 4, gdc: "without", title: "Linear Motion Position & Distance", body: "Displacement $s = 3t + 2, t \\ge 0$.\n(a) Find initial position A on line. [1]\n(b) At $t=2s$ (position B), write:\n(i) displacement from origin O\n(ii) displacement from initial position\n(iii) total distance travelled in 2s. [3]" },
+            { id: "5.12-3", doc: "5.12", section: "Practice Questions", marks: 4, gdc: "without", title: "Free Fall Kinematic Equations", body: "Displacement $s = v_0 t + \\frac{1}{2}gt^2$.\n(a) Express velocity $v(t)$ and acceleration $a(t)$ using derivatives. [3]\n(b) If O is 18m above ground, write equation to calculate time to reach ground. [1]" },
+            { id: "5.12-4", doc: "5.12", section: "Practice Questions", marks: 12, gdc: "without", title: "Cubic Kinematics Motion Analysis", body: "Displacement $s = 12t - t^3, t \\ge 0$.\n(a) Calculate velocity in terms of $t$ and at $t=1$. [2]\n(b) Calculate acceleration in terms of $t$ and at $t=1$. [2]\n(c) Find time $t$ when:\n(i) velocity is $-15 m/s$\n(ii) body is stationary\n(iii) body passes origin O again. [6]" },
+            { id: "5.12-5", doc: "5.12", section: "Practice Questions", marks: 10, gdc: "with", title: "Linear Decreasing Acceleration Integration", body: "Acceleration $a = -6t, t \\ge 0$. Initial velocity $v(0) = 12 m/s$, initial displacement $s(0) = 0$.\n(a) Find $v(t)$. [3]\n(b) Find $s(t)$. [3]\n(c) Find time when body changes direction. [2]\n(d) Find maximum positive displacement. [2]" },
+            { id: "5.12-6", doc: "5.12", section: "Practice Questions", marks: 10, gdc: "with", title: "Quadratic Velocity Motion & Distance", body: "Velocity $v = 12 - 3t^2$.\n(a) Calculate acceleration at $t=3s$. [2]\n(b) Find time $t=a$ when body changes direction. [2]\n(c) During first 3 seconds, find displacement and total distance. [4]\n(d) Sketch $v(t)$ graph and shade area representing distance. [2]" },
+            { id: "5.12-7", doc: "5.12", section: "Exam Style Short", marks: 6, gdc: "without", title: "Car Motion Stopping Distance", body: "Displacement $s = 10t - 0.5t^2$.\n(a) Calculate initial velocity. [3]\n(b) Calculate time when velocity is zero. [2]\n(c) Calculate displacement when velocity is zero. [1]" },
+            { id: "5.12-8", doc: "5.12", section: "Exam Style Short", marks: 6, gdc: "with", title: "Harmonic Oscillating Particle Motion", body: "Displacement $s = 5\\cos 3t + t^2 + 10$ for $t \\ge 0$.\n(a) Write down minimum displacement $s$. [1]\n(b) Find acceleration expression $a(t)$. [3]\n(c) Find time $t$ when maximum acceleration first occurs. [2]" },
+            { id: "5.12-9", doc: "5.12", section: "Exam Style Short", marks: 6, gdc: "with", title: "Exponential Velocity Particle Acceleration & Distance", body: "Velocity $v = e^{3t-2} m/s$.\n(a) Find acceleration at $t=1s$. [2]\n(b) Find $t$ when velocity is $22.3 m/s$. [2]\n(c) Find distance travelled in first second. [2]" },
+            { id: "5.12-10", doc: "5.12", section: "Exam Style Short", marks: 6, gdc: "without", title: "Polynomial Velocity Anti-derivative & Initial Condition", body: "Velocity $v = 4t^3 - 2t$. At $t=2s$, displacement $s = 8m$.\n(a) Find expression for $s(t)$. [4]\n(b) Find acceleration after 1 second. [2]" },
+            { id: "5.12-11", doc: "5.12", section: "Exam Style Short", marks: 6, gdc: "with", title: "Exponential Velocity Displacement Calculation", body: "Velocity $v = e^{2t-1}$. At $t=0.5s$, $s=10m$. Find displacement when $t=1s$." },
+            { id: "5.12-12", doc: "5.12", section: "Exam Style Short", marks: 6, gdc: "without", title: "Combined Exponential Linear Velocity Integration", body: "Velocity $v = e^{-2t} + 12t$. Given $s=2$ at $t=0$, express $s$ in terms of $t$." },
+            { id: "5.12-13", doc: "5.12", section: "Exam Style Short", marks: 6, gdc: "without", title: "Scaled Exponential Velocity Integration", body: "Velocity $v = 6e^{3t} + 4$. At $t=0$, $s=7m$. Find expression for $s$ in terms of $t$." },
+            { id: "5.12-14", doc: "5.12", section: "Exam Style Short", marks: 6, gdc: "without", title: "Linear Velocity Constant Retardation", body: "Velocity $v = 50 - 10t$.\n(a) Find acceleration. [2]\n(b) Given initial displacement $s(0)=40m$, find $s(t)$. [4]" },
+            { id: "5.12-15", doc: "5.12", section: "Exam Style Short", marks: 7, gdc: "with", title: "Radical Velocity Curve & First 9 Seconds Distance", body: "Velocity $v(t) = 15\\sqrt{t} - 3t$ on $[0, 25]$.\n(a) Sketch graph of $v(t)$ with maximum point. [3]\n(b) Write integral expression and evaluate distance $d$ in first 9 seconds. [4]" },
+            { id: "5.12-16", doc: "5.12", section: "Exam Style Short", marks: 7, gdc: "with", title: "Trig and Reciprocal Acceleration Integration", body: "Acceleration $a = \\frac{1}{t} + 3\\sin 2t$ for $t \\ge 1$. Particle at rest at $t=1$. Find velocity when $t=5$." },
+            { id: "5.12-17", doc: "5.12", section: "Exam Style Short", marks: 6, gdc: "without", title: "Identifying Kinematic Graphs (s, v, a)", body: "(a) Match Graphs A, B, C to displacement, velocity, and acceleration. [4]\n(b) Write down time $t$ when velocity is greatest. [2]" },
+            { id: "5.12-18", doc: "5.12", section: "Exam Style Short", marks: 9, gdc: "with", title: "Quadratic Velocity Displacement & Interval", body: "Velocity $v = 25 - 4t^2, t \\ge 0$. At $t=3$, $s=10m$.\n(a) Find $s(t)$. [4]\n(b) Find $t$ when $s$ reaches maximum value. [2]\n(c) Particle has positive displacement for $m \\le t \\le n$. Find $m, n$. [3]" },
+            { id: "5.12-19", doc: "5.12", section: "Exam Style Short", marks: 6, gdc: "with", title: "Decelerating Object Max Displacement", body: "Displacement $s = 50t - 10t^2 + 1000$.\n(a) Find velocity. [2]\n(b) Find maximum displacement from O. [3]\n(c) Find acceleration. [1]" },
+            { id: "5.12-20", doc: "5.12", section: "Exam Style Short", marks: 4, gdc: "without", title: "Lunar Free Fall Gravity Constant", body: "Ball on moon has height $s = 40t + 0.5at^2$. Reaches max height at $t=25s$. Find value of lunar acceleration constant $a$." },
+            { id: "5.12-21", doc: "5.12", section: "Exam Style Short", marks: 6, gdc: "with", title: "Quadratic Velocity Origin Crossing Time", body: "Velocity $v = 3t^2 - 4t + 2$. Initial displacement $s(0) = -3$. Find time $t$ when particle is at origin O." },
+            { id: "5.12-22", doc: "5.12", section: "Exam Style Short", marks: 6, gdc: "with", title: "Fast Train Deceleration Distance in 1 Minute", body: "Acceleration $a(t) = -\\frac{1}{20}t + 2$ for first 80s. Starts from rest at $t=0$. Find distance travelled in first 60 seconds." },
+            { id: "5.12-23", doc: "5.12", section: "Exam Style Short", marks: 6, gdc: "with", title: "Displacement vs Distance Comparison", body: "Velocity $v(t) = 6t^2 - 6t$.\n(a) Find displacement in first 2 seconds. [2]\n(b) Find total distance in first 2 seconds. [3]\n(c) Explain why the two results are different. [1]" },
+            { id: "5.12-24", doc: "5.12", section: "Exam Style Short", marks: 4, gdc: "without", title: "Exponential Decay Velocity Distance Traveled", body: "Velocity $v = k e^{-t/2} m/s$. Find distance travelled between $t=0$ and $t=a$." },
+            { id: "5.12-25", doc: "5.12", section: "Exam Style Short", marks: 5, gdc: "with", title: "Rational Velocity Acceleration & Distance", body: "Velocity $v = \\frac{1}{2+t^2}$.\n(a) Find distance travelled in first second. [2]\n(b) Find expression for acceleration at time $t$. [3]" },
+            { id: "5.12-26", doc: "5.12", section: "Exam Style Short", marks: 6, gdc: "with", title: "Damped Sine Wave Direction Change & Total Distance", body: "Velocity $v = e^{-\\sqrt{t}}\\sin t$.\n(a) Find first time it changes direction. [1]\n(b) In interval $[0, 2\\pi]$, find displacement and total distance. [5]" },
+            { id: "5.12-27", doc: "5.12", section: "Exam Style Short", marks: 8, gdc: "with", title: "Oscillating Particle Zero Velocity & Total Distance", body: "Velocity $v(t) = t \\sin(\\frac{\\pi}{3}t)$.\n(a) Find displacement in first 6 seconds. [2]\n(b) Find times $t \\in [0, 6]$ where $v(t)=0$. [2]\n(c) Express and calculate total distance travelled in first 6 seconds. [4]" },
+            { id: "5.12-28", doc: "5.12", section: "Exam Style Long", marks: 12, gdc: "without", title: "Harmonic Oscillator Motion Analysis", body: "Displacement $s = \\sin(t/4), t \\ge 0$.\n(a) Find velocity and acceleration expressions. [2]\n(b) Find maximum displacement. [2]\n(c) Find times it passes fixed point O. [2]\n(d) Find velocity at these times. [2]\n(e) Find times when body changes direction. [2]\n(f) Find acceleration at these times. [2]" },
+            { id: "5.12-29", doc: "5.12", section: "Exam Style Long", marks: 14, gdc: "without", title: "Car Exponential Velocity Stopping & Distance", body: "Velocity $v = 16 - 4e^{2t}$.\n(a) Calculate acceleration after $\\ln 3$ seconds. [3]\n(b) Calculate displacement $s(t)$ given initial displacement is 0. [3]\n(c) Find exact time $t$ when car is stationary. [3]\n(d) Find displacement and distance travelled after $\\ln 4$ seconds. [5]" },
+            { id: "5.12-30", doc: "5.12", section: "Exam Style Long", marks: 15, gdc: "with", title: "Terminal Velocity & Free Fall Integration", body: "Velocity $v = 50 - 50e^{-0.2t}$.\n(a) Find $v$ at $t=0$ and $t=10$. [2]\n(b) Find acceleration $a(t)$ and its value at $t=0$. [3]\n(c) Find limiting values of $v$ and $a$ as $t \\to \\infty$ and explain relationship. [3]\n(d) Show fallen distance $y = 50t + 250e^{-0.2t} + k$, find $k$, and calculate time to fall 250m. [7]" },
+            { id: "5.12-31", doc: "5.12", section: "Exam Style Long", marks: 15, gdc: "without", title: "Train Approaching Station Braking Models", body: "Retardation model $v = 30 - at, s(0)=0$.\n(a) Express $s$ in terms of $a$ and $t$. [5]\n(b) Train 1 ($a=5$): find initial velocity and prove it stops before station (200m away). [5]\n(c) Train 2 stops exactly at station: find stopping time and determine required value of $a$. [5]" },
+            { id: "5.12-32", doc: "5.12", section: "Exam Style Long", marks: 15, gdc: "without", title: "Vertical Projectile Height & Max Height", body: "Height $h = 2 + 20t - 5t^2$.\n(a) Find initial height. [2]\n(b) Show height after 1s is 17m. [2]\n(c) Find second time height is 17m. [4]\n(d) Find $\\frac{dh}{dt}$, initial velocity, time to reach max height, and max height. [7]" },
+            { id: "5.12-33", doc: "5.12", section: "Exam Style Long", marks: 15, gdc: "with", title: "Airplane Landing Runway Distance & Marker", body: "Runway distance $s = c + 100t - 4t^2$.\n(a) Touchdown at $c=800m$: find distance in first 5s and velocity at $t=5s$. [5]\n(b) Passes marker P at $36 m/s$: find time to reach P and distance P to A. [5]\n(c) Prove if touchdown occurs before P, plane stops before end of 2km runway. [5]" },
+            { id: "5.12-34", doc: "5.12", section: "Exam Style Long", marks: 16, gdc: "with", title: "Dual Suspended Springs Harmonic Motion", body: "Spring 1: $s = 48 + 10\\cos 2\\pi t$. Spring 2: $r = 60 + 15\\cos 4\\pi t$.\n(a) Find distance of P from ceiling and period of oscillation. [5]\n(b) Find $\\frac{ds}{dt}$ and position when velocity is zero. [7]\n(c) Find time when masses are first at same height. [2]\n(d) Count how many times masses are at same height in first 3 seconds. [2]" },
+            { id: "5.12-35", doc: "5.12", section: "Exam Style Long", marks: 15, gdc: "with", title: "Piecewise Rock-Climber Fall Model", body: "Height $h = 50 - 5t^2$ for $t \\in [0, 2]$; $h = 90 - 40t + 5t^2$ for $t \\in [2, 5]$.\n(a) Find height at $t=2s$. [1]\n(b) Sketch $h(t)$ graph. [4]\n(c) Find velocity functions for both intervals. [2]\n(d) Find velocity at $t=2s$. [2]\n(e) Find times when velocity is zero. [3]\n(f) Find minimum height reached. [3]" },
+            { id: "5.12-36", doc: "5.12", section: "Exam Style Long", marks: 22, gdc: "with", title: "Ferris Wheel Rotational Kinematics", body: "Ferris wheel radius 15m.\n(a) Find arc length AB for angle $\\pi/6$. [2]\n(b) Find sector area AOB. [2]\n(c) Find height of A after rotation of $2\\pi/3$. [3]\n(d) Height model $h(t) = 15 - 15\\cos(2t + \\pi/4)$: find height at $t=\\pi/4$, initial height, and time of first max height. [8]\n(e) Find rate of height change $h'(t)$. [2]\n(f) Sketch $h'(t)$ on $[0, \\pi]$ and find time height changes most rapidly. [5]" },
+            { id: "5.12-37", doc: "5.12", section: "Exam Style Long", marks: 16, gdc: "without", title: "Particle Motion with Trig Acceleration Zero Point", body: "Velocity $v = 2t + \\cos 2t$ on $[0, 2]$.\n(a) Velocity at $t=0$. [1]\n(b) Show acceleration is zero at $k = \\pi/4$ and find exact velocity at $k$. [8]\n(c) Sketch graph of $v(t)$. [4]\n(d) Represent distance $d$ in first second on sketch. [3]" },
+            { id: "5.12-38", doc: "5.12", section: "Exam Style Long", marks: 15, gdc: "with", title: "Parabolic Velocity Max Speed & Zero Speed Retardation", body: "Velocity $v = 240 + 20t - 10t^2$ on $[0, 6]$.\n(a) Express $f(t) = -10(t-p)(t-q)$. [2]\n(b) Express $f(t) = -10(t-h)^2 + k$. [4]\n(c) Show standard polynomial form. [2]\n(d) Find time $t$ when speed is greatest and acceleration when speed is zero. [7]" },
+            { id: "5.12-39", doc: "5.12", section: "Exam Style Long", marks: 17, gdc: "without", title: "Train Deceleration Parameter Determination", body: "Velocity $v = 40 - at$.\n(a) Find $s(t)$ if $s(0)=100$ and if $s(0)=0$. [6]\n(b) Train M stops at station 500m away: find stopping time and prove $a = 8/5$. [6]\n(c) Train N ($a=4$): prove it stops before station. [5]" },
+            { id: "5.12-40", doc: "5.12", section: "Exam Style Long", marks: 23, gdc: "with", title: "Two Particles Race Displacement Intersections", body: "Particle A: $v_A = -0.5t^2 + 3t + 1.5, s_A(0)=0$.\nParticle B: $v_B = e^{0.2t}, s_B(0)=5$.\n(a) Find max velocity of A with justification. [5]\n(b) Find acceleration of B at $t=4s$. [3]\n(c) Find displacement expressions $s_A(t)$ and $s_B(t)$. [7]\n(d) Sketch curves of $s_A$ and $s_B$ and find times when $s_A = s_B$. [8]" },
+            { id: "5.12-41", doc: "5.12", section: "Exam Style Long", marks: 11, gdc: "without", title: "Rational Power Acceleration Limiting Velocity", body: "Acceleration $a = -\\frac{1}{(1+t)^2}$ for $t > 0$. At $t=1s$, velocity $v=8 m/s$.\n(a) Find velocity when $t=3s$. [6]\n(b) Find limiting velocity as $t \\to \\infty$. [1]\n(c) Find exact distance travelled between $t=1$ and $t=3$. [4]" },
 
-    elif category == "Differential Equations & Kinematics":
-        q1 = st.radio("Question 1: Solve $\\frac{dy}{dx} = 4x + 1$ with $y(3) = 1$", [
-            "A) $y = 2x^2 + x - 18$",
-            "B) $y = 2x^2 + x + 1$",
-            "C) $y = 4x^2 + x - 35$",
-            "D) $y = 2x^2 + x - 20$"
-        ])
-        if st.button("Submit D.E. Answer"):
-            if "A) $y = 2x^2 + x - 18$" in q1:
-                st.success("Correct! $y = \\int (4x+1)dx = 2x^2 + x + C$[cite: 498]. Plugging $y(3)=1 \\implies 2(9) + 3 + C = 1 \\implies 21 + C = 1 \\implies C = -18$[cite: 498].")
-            else:
-                st.error("Incorrect. Re-evaluate the integration constant $C$ using $y(3)=1$[cite: 498].")
+            // 5.18 - 5.19 More Integrals & Further Substitution
+            { id: "5.18-1", doc: "5.18-5.19", section: "More Integrals", marks: 10, gdc: "without", title: "Standard Formula Sheet Integration Table", body: "Evaluate the standard formula integrals:\n1. $\\int 5^x dx$\n2. $\\int (x^3 + 3^x) dx$\n3. $\\int \\sec^2 x dx$\n4. $\\int (\\tan^2 x + 1) dx$\n5. $\\int \\frac{5}{\\cos^2 x} dx$\n6. $\\int \\text{cosec}^2 x dx$\n7. $\\int (\\cot^2 x + 1) dx$\n8. $\\int \\frac{5}{\\sin^2 x} dx$\n9. $\\int \\sec x \\tan x dx$\n10. $\\int \\text{cosec} x \\cot x dx$" },
+            { id: "5.18-2", doc: "5.18-5.19", section: "More Integrals", marks: 10, gdc: "without", title: "Arctan Form Standard Integrals", body: "Use formula $\\int \\frac{1}{a^2+x^2} dx = \\frac{1}{a}\\arctan\\frac{x}{a} + C$ to find:\n1. $\\int \\frac{7}{16+x^2} dx$\n2. $\\int \\frac{7}{1+16x^2} dx$\n3. $\\int \\frac{7}{25+16x^2} dx$\n4. $\\int \\frac{7}{2+x^2} dx$\n5. $\\int \\frac{7}{2+3x^2} dx$" },
+            { id: "5.18-3", doc: "5.18-5.19", section: "More Integrals", marks: 10, gdc: "without", title: "Arcsin Form Standard Integrals", body: "Use formula $\\int \\frac{1}{\\sqrt{a^2-x^2}} dx = \\arcsin\\frac{x}{a} + C$ to find:\n1. $\\int \\frac{7}{\\sqrt{16-x^2}} dx$\n2. $\\int \\frac{7}{\\sqrt{1-16x^2}} dx$\n3. $\\int \\frac{7}{\\sqrt{25-16x^2}} dx$\n4. $\\int \\frac{7}{\\sqrt{2-x^2}} dx$\n5. $\\int \\frac{7}{\\sqrt{2-3x^2}} dx$" },
+            { id: "5.18-4", doc: "5.18-5.19", section: "More Integrals", marks: 14, gdc: "without", title: "Quadratic Expressions Integration Methods", body: "(a) Factorize $x^2-10x+24$ and decompose $\\frac{2}{x^2-10x+24}$ into partial fractions. [5]\n(b) Express $x^2-10x+25$ as $(x-h)^2$. [1]\n(c) Express $x^2-10x+26$ in vertex form $(x-h)^2+k$. [2]\n(d) Hence evaluate integrals of reciprocals for all three quadratics. [6]" },
+            { id: "5.18-5", doc: "5.18-5.19", section: "Exam Style Short", marks: 6, gdc: "without", title: "Exponential Fraction Simplification", body: "Find:\n(i) $\\int \\frac{e^{3x} + 2e^x + 4}{3e^{2x}} dx$\n(ii) $\\int \\frac{4^x + 2^x + 1}{2^x} dx$" },
+            { id: "5.18-6", doc: "5.18-5.19", section: "Exam Style Short", marks: 4, gdc: "without", title: "Tan^2 and Cot^2 Trig Identity Integration", body: "Calculate integrals using trig identities:\n(i) $\\int \\tan^2 x dx$\n(ii) $\\int \\cot^2 x dx$" },
+            { id: "5.18-7", doc: "5.18-5.19", section: "Exam Style Short", marks: 5, gdc: "without", title: "Scaled Arctan Form Integrals", body: "Find:\n(i) $\\int \\frac{3}{x^2+9} dx$\n(ii) $\\int \\frac{3}{9x^2+1} dx$" },
+            { id: "5.18-8", doc: "5.18-5.19", section: "Exam Style Short", marks: 5, gdc: "without", title: "Scaled Arcsin Form Integrals", body: "Find:\n(i) $\\int \\frac{3}{\\sqrt{9-x^2}} dx$\n(ii) $\\int \\frac{3}{\\sqrt{1-9x^2}} dx$" },
+            { id: "5.18-9", doc: "5.18-5.19", section: "Exam Style Short", marks: 5, gdc: "without", title: "Shifted Arctan Form Integrals", body: "Find:\n(i) $\\int \\frac{7}{(x-1)^2+4} dx$\n(ii) $\\int \\frac{7}{4(x-1)^2+1} dx$" },
+            { id: "5.18-10", doc: "5.18-5.19", section: "Exam Style Short", marks: 5, gdc: "without", title: "Shifted Arcsin Form Integrals", body: "Find:\n(i) $\\int \\frac{7}{\\sqrt{4-(x-1)^2}} dx$\n(ii) $\\int \\frac{7}{\\sqrt{1-4(x-1)^2}} dx$" },
+            { id: "5.18-11", doc: "5.18-5.19", section: "Exam Style Short", marks: 6, gdc: "without", title: "General Parameter Inverse Trig Forms", body: "For positive constants $b, c$, find:\n(i) $\\int \\frac{a}{bx^2+c} dx$\n(ii) $\\int \\frac{a}{\\sqrt{c-bx^2}} dx$" },
+            { id: "5.18-12", doc: "5.18-5.19", section: "Exam Style Short", marks: 7, gdc: "without", title: "Partial Fraction Decomposition Integration", body: "(a) Show $\\frac{x^2+3x+12}{x(x+2)^2} = \\frac{3}{x} - \\frac{2}{x+2} - \\frac{5}{(x+2)^2}$. [3]\n(b) Hence evaluate $\\int \\frac{x^2+3x+12}{x(x+2)^2} dx$. [4]" },
+            { id: "5.18-13", doc: "5.18-5.19", section: "Exam Style Short", marks: 7, gdc: "without", title: "Completing Square Log Partial Fractions", body: "Calculate $\\int \\frac{6}{x^2+6x+8} dx$." },
+            { id: "5.18-14", doc: "5.18-5.19", section: "Exam Style Short", marks: 5, gdc: "without", title: "Completing Square Arctan Form", body: "Calculate $\\int \\frac{6}{x^2+6x+13} dx$." },
+            { id: "5.18-15", doc: "5.18-5.19", section: "Exam Style Short", marks: 7, gdc: "without", title: "Linear Numerator over Quadratic Partial Fractions", body: "Calculate $\\int \\frac{x+6}{x^2-6x+8} dx$." },
+            { id: "5.18-16", doc: "5.18-5.19", section: "Exam Style Short", marks: 5, gdc: "without", title: "Negative Quadratic Radical Arcsin Form", body: "Calculate $\\int \\frac{7}{\\sqrt{-x^2-6x+7}} dx$." },
+            { id: "5.18-17", doc: "5.18-5.19", section: "Exam Style Short", marks: 9, gdc: "without", title: "Improper Rational Polynomial Long Division", body: "(a) Express $\\frac{3x^2+4x+2}{x^2-6x+8}$ as $a + \\frac{bx+c}{x^2-6x+8}$. [3]\n(b) Hence calculate $\\int \\frac{3x^2+4x+2}{x^2-6x+8} dx$. [6]" },
+            { id: "5.18-18", doc: "5.18-5.19", section: "Further Substitution", marks: 12, gdc: "without", title: "Substitution u = tan x Integrals", body: "Use substitution $u = \\tan x$ to find:\n(i) $\\int \\tan^5 x \\sec^2 x dx$\n(ii) $\\int \\frac{\\sec^2 x}{\\sqrt{\\tan x}} dx$\n(iii) $\\int \\frac{\\sec^2 x}{e^{\\tan x}} dx$\n(iv) $\\int \\frac{\\sin^5 x}{\\cos^7 x} dx$" },
+            { id: "5.18-19", doc: "5.18-5.19", section: "Further Substitution", marks: 16, gdc: "without", title: "Logarithmic Derivative Form Integrals", body: "Use $\\int \\frac{f'(x)}{f(x)} dx = \\ln|f(x)| + C$ to calculate:\n1. $\\int \\tan x dx$\n2. $\\int \\cot x dx$\n3. $\\int \\frac{2x}{x^2+7} dx$\n4. $\\int \\frac{x}{3x^2+7} dx$\n5. $\\int \\frac{x^2}{3x^3+7} dx$\n6. $\\int \\frac{6x+5}{3x^2+5x+1} dx$\n7. $\\int \\frac{e^x}{e^x+5} dx$\n8. $\\int \\frac{e^{2x}}{e^{2x}+5} dx$" },
+            { id: "5.18-20", doc: "5.18-5.19", section: "Further Substitution", marks: 5, gdc: "without", title: "Substitution u = e^x for Arctan Form", body: "Find $\\int \\frac{e^x}{e^{2x}+1} dx$ by using substitution $u = e^x$." },
+            { id: "5.18-21", doc: "5.18-5.19", section: "Further Substitution", marks: 15, gdc: "without", title: "Linear Substitution u = x + 5", body: "Using substitution $u = x+5$, calculate:\n(i) $\\int \\frac{3x}{x+5} dx$\n(ii) $\\int \\frac{x}{\\sqrt{x+5}} dx$\n(iii) $\\int \\frac{x^2}{x+5} dx$" },
+            { id: "5.18-22", doc: "5.18-5.19", section: "Further Substitution", marks: 18, gdc: "without", title: "Quadratic Substitution u = x^2 + 5", body: "Using substitution $u = x^2+5$, find:\n(i) $\\int x^3(x^2+5)^5 dx$\n(ii) $\\int \\frac{x^3}{\\sqrt{x^2+5}} dx$\n(iii) $\\int \\frac{x^5}{x^2+5} dx$" },
+            { id: "5.18-23", doc: "5.18-5.19", section: "Further Substitution", marks: 15, gdc: "without", title: "Trig Substitution u = sin x", body: "Using substitution $u = \\sin x$, find:\n(i) $\\int \\cos^3 x dx$\n(ii) $\\int \\cos^5 x dx$\n(iii) $\\int \\sin^2 x \\cos^3 x dx$" },
+            { id: "5.18-24", doc: "5.18-5.19", section: "Further Substitution", marks: 6, gdc: "without", title: "Trig Substitution x = 3 tan theta", body: "Calculate $\\int \\frac{1}{9+x^2} dx$ using substitution $x = 3\\tan\\theta$." },
+            { id: "5.18-25", doc: "5.18-5.19", section: "Further Substitution", marks: 6, gdc: "without", title: "Trig Substitution x = 3 sin theta", body: "Calculate $\\int \\frac{1}{\\sqrt{9-x^2}} dx$ using substitution $x = 3\\sin\\theta$." },
+            { id: "5.18-26", doc: "5.18-5.19", section: "Further Substitution", marks: 12, gdc: "without", title: "Comparison of Powers in Numerator Integrals", body: "Find indefinite integrals:\n(a) $\\int \\frac{1}{x^2+2} dx$\n(b) $\\int \\frac{x}{x^2+2} dx$\n(c) $\\int \\frac{x^2}{x^2+2} dx$\n(d) $\\int \\frac{x^3}{x^2+2} dx$" },
+            { id: "5.18-27", doc: "5.18-5.19", section: "Exam Style Short", marks: 6, gdc: "without", title: "Logarithmic Substitution for Tan", body: "By using an appropriate substitution, find $\\int \\frac{\\tan(\\ln y)}{y} dy$ for $y>0$." },
+            { id: "5.18-28", doc: "5.18-5.19", section: "Exam Style Short", marks: 6, gdc: "without", title: "Logarithmic Substitution for Cot", body: "By using an appropriate substitution, find $\\int \\frac{\\cot(\\ln y)}{y} dy$ for $y>0$." },
+            { id: "5.18-29", doc: "5.18-5.19", section: "Exam Style Short", marks: 6, gdc: "without", title: "Linear Substitution u = 2 - x", body: "Using substitution $y = 2-x$, find $\\int \\left(\\frac{x}{2-x}\\right)^2 dx$." },
+            { id: "5.18-30", doc: "5.18-5.19", section: "Exam Style Short", marks: 5, gdc: "without", title: "Radical Linear Substitution u = x/2 + 1", body: "Using substitution $u = \\frac{1}{2}x+1$, find $\\int x\\sqrt{\\frac{1}{2}x+1} dx$." },
+            { id: "5.18-31", doc: "5.18-5.19", section: "Exam Style Short", marks: 6, gdc: "without", title: "Cubic Numerator Shifted Substitution", body: "Use substitution $u = x+2$ to find $\\int \\frac{x^3}{(x+2)^2} dx$." },
+            { id: "5.18-32", doc: "5.18-5.19", section: "Exam Style Short", marks: 7, gdc: "without", title: "Sine Substitution for Radical Integration", body: "Calculate $\\int \\sqrt{5-x^2} dx$ by using substitution $x = \\sqrt{5}\\sin\\theta$." },
+            { id: "5.18-33", doc: "5.18-5.19", section: "Exam Style Short", marks: 8, gdc: "without", title: "Sin^2 theta Substitution Rational Radical Form", body: "Calculate $\\int \\sqrt{\\frac{x}{4-x}} dx$ using $x = 4\\sin^2\\theta$. Express answer as $A\\arcsin\\frac{\\sqrt{x}}{2} + B\\sqrt{4x-x^2} + C$." },
+            { id: "5.18-34", doc: "5.18-5.19", section: "Exam Style Short", marks: 6, gdc: "without", title: "Partial Fractions with Irreducible Quadratic Factor", body: "(a) Show $\\frac{2x+4}{(x^2+4)(x-2)} = \\frac{1}{x-2} - \\frac{x}{x^2+4}$. [2]\n(b) Hence find $\\int \\frac{2x+4}{(x^2+4)(x-2)} dx$. [4]" },
+            { id: "5.18-35", doc: "5.18-5.19", section: "Exam Style Short", marks: 5, gdc: "without", title: "Exponential Fraction Integration Pair", body: "Find:\n(i) $\\int \\frac{e^x+1}{e^x} dx$\n(ii) $\\int \\frac{e^x}{e^x+1} dx$" },
+            { id: "5.18-36", doc: "5.18-5.19", section: "Exam Style Short", marks: 6, gdc: "without", title: "Exponential Arctan Substitution", body: "Find $\\int \\frac{e^x}{e^{2x}+4} dx$." },
+            { id: "5.18-37", doc: "5.18-5.19", section: "Exam Style Short", marks: 6, gdc: "without", title: "Base 3 Exponential Arctan Substitution", body: "Find $\\int \\frac{3^x}{9^x+9} dx$." },
+            { id: "5.18-38", doc: "5.18-5.19", section: "Exam Style Short", marks: 7, gdc: "without", title: "Trig Substitution for sqrt(1 - 4x^2)", body: "Using substitution $2x = \\sin\\theta$, find $\\int \\sqrt{1-4x^2} dx$." },
+            { id: "5.18-39", doc: "5.18-5.19", section: "Exam Style Short", marks: 6, gdc: "without", title: "Sin^3 x Integration via Identity", body: "By using an appropriate substitution, find $\\int \\sin^3 x dx$." },
+            { id: "5.18-40", doc: "5.18-5.19", section: "Exam Style Short", marks: 5, gdc: "without", title: "Sin^3 x Cos^3 x Integration via u = sin x", body: "By using substitution $u = \\sin x$, find $\\int \\sin^3 x \\cos^3 x dx$." },
+            { id: "5.18-41", doc: "5.18-5.19", section: "Definite Integrals", marks: 4, gdc: "without", title: "Arctan Form Definite Integral Calculation", body: "Find $\\int_{0}^{2} \\frac{1}{4+x^2} dx$." },
+            { id: "5.18-42", doc: "5.18-5.19", section: "Definite Integrals", marks: 6, gdc: "without", title: "Upper Limit Determination for Arctan Integral", body: "Find $k$ given that $\\int_{0}^{k} \\frac{1}{4+x^2} dx = \\frac{\\pi}{6}$." },
+            { id: "5.18-43", doc: "5.18-5.19", section: "Definite Integrals", marks: 4, gdc: "with", title: "GDC Parameter Solver for Arctan Integral", body: "Find values of $a > 0$ such that $\\int_{a}^{a^2} \\frac{1}{1+x^2} dx = 0.22$." },
+            { id: "5.18-44", doc: "5.18-5.19", section: "Definite Integrals", marks: 6, gdc: "without", title: "Exact Exponential Arctan Definite Integral", body: "Find $\\int_{0}^{\\ln 3} \\frac{e^x}{e^{2x}+9} dx$, expressing answer in exact form." },
+            { id: "5.18-45", doc: "5.18-5.19", section: "Definite Integrals", marks: 8, gdc: "without", title: "Exact Circle Definite Integral via Trig Substitution", body: "Calculate $\\int_{0}^{2} \\sqrt{4-x^2} dx$ by using substitution $x = 2\\sin\\theta$." },
+            { id: "5.18-46", doc: "5.18-5.19", section: "Definite Integrals", marks: 8, gdc: "without", title: "Exact Radical Definite Integral via sin^2 theta", body: "Show that $\\int_{0}^{1/2} \\sqrt{\\frac{x}{1-x}} dx = \\frac{\\pi}{4} - \\frac{1}{2}$ by using substitution $x = \\sin^2\\theta$." },
 
-# ---------------------------------------------------------
-# SECTION 3: QUEST DASHBOARD
-# ---------------------------------------------------------
-elif app_mode == "🏆 Quest Dashboard":
-    st.header("🏆 Quest Dashboard & Progress")
-    st.markdown("Track your calculus mastery and streak!")
-    
-    col1, col2, col3 = st.columns(3)
-    with col1:
-        st.metric("❤️ Hearts / Lives", "3 / 3")
-    with col2:
-        st.metric("✨ Sparkle Points", "30 XP")
-    with col3:
-        st.metric("🔥 Current Streak", "5 Days")
-        
-    st.markdown("---")
-    st.subheader("🎯 Badges Unlocked")
-    st.markdown("""
-    * 🟢 **Integration Novice** - Completed Basic Integrals
-    * 🟡 **Substitution Master** - Mastered Anti-Chain Rule
-    * 🔵 **Differential Expert** - Solved Separable D.E.s
-    """)
+            // 5.20 Integration by Parts
+            { id: "5.20-1", doc: "5.20", section: "Practice Questions", marks: 16, gdc: "without", title: "Basic Integration by Parts (4 Forms)", body: "Find:\n$I_1 = \\int 2x e^x dx$\n$I_2 = \\int 2x \\cos x dx$\n$I_3 = \\int 2x \\sin x dx$\n$I_4 = \\int 2x \\ln x dx$" },
+            { id: "5.20-2", doc: "5.20", section: "Practice Questions", marks: 20, gdc: "without", title: "Repeated Integration by Parts Quadratics", body: "Find:\n$I_1 = \\int (3x^2+4x+1)\\cos x dx$\n$I_2 = \\int (3x^2+4x+1)\\sin x dx$\n$I_3 = \\int (3x^2+4x+1)e^x dx$\n$I_4 = \\int (3x^2+4x+1)\\ln x dx$" },
+            { id: "5.20-3", doc: "5.20", section: "Practice Questions", marks: 6, gdc: "without", title: "Cyclic Exponential Trig Integration by Parts", body: "Find $I = \\int e^{2x} \\cos 2x dx$ using integration by parts in two ways:\nMETHOD A: by integrating $e^{2x}$ first.\nMETHOD B: by integrating $\\cos 2x$ first." },
+            { id: "5.20-4", doc: "5.20", section: "Practice Questions", marks: 10, gdc: "without", title: "Reduction Formula for x^n e^x", body: "Let $I_n = \\int x^n e^x dx$.\n(a) Find $I_0$. [2]\n(b) Express $I_n$ in terms of $I_{n-1}$. [2]\n(c) Find $I_1, I_2, I_3$ using recursive relation in form $p(x)e^x + C$. [6]" },
+            { id: "5.20-5", doc: "5.20", section: "Practice Questions", marks: 12, gdc: "without", title: "4 Methods Comparison for 4 sin x cos x", body: "Consider $I = \\int 4\\sin x \\cos x dx$.\n(a) Find $I$ using:\n(i) $u = \\sin x$\n(ii) $u = \\cos x$\n(iii) double angle formula $\\sin 2x$\n(iv) integration by parts. [10]\n(b) Explain difference in constants/results. [2]" },
+            { id: "5.20-6", doc: "5.20", section: "Practice Questions", marks: 12, gdc: "without", title: "Definite Integration by Parts Execution Methods", body: "Calculate definite integral $I = \\int_{0}^{1} (3x+2)e^x dx$:\nMETHOD A: Find indefinite integral first, then apply limits.\nMETHOD B: Apply limits during integration by parts." },
+            { id: "5.20-7", doc: "5.20", section: "Exam Style Short", marks: 6, gdc: "without", title: "Integration by Parts Trig Polynomial", body: "Find $\\int (\\theta \\cos \\theta - \\theta) d\\theta$." },
+            { id: "5.20-8", doc: "5.20", section: "Exam Style Short", marks: 6, gdc: "without", title: "Logarithm with Radical Integration by Parts", body: "Find $\\int \\frac{\\ln x}{\\sqrt{x}} dx$." },
+            { id: "5.20-9", doc: "5.20", section: "Exam Style Short", marks: 6, gdc: "without", title: "e^x cos x Cyclic Integration by Parts", body: "Find $\\int e^x \\cos x dx$." },
+            { id: "5.20-10", doc: "5.20", section: "Exam Style Short", marks: 6, gdc: "without", title: "e^(2x) sin x Cyclic Integration by Parts", body: "Find $\\int e^{2x} \\sin x dx$." },
+            { id: "5.20-11", doc: "5.20", section: "Exam Style Short", marks: 7, gdc: "without", title: "(ln x)^2 Integration by Parts", body: "Let $f(x) = x \\ln x - x, x > 0$.\n(a) Find $f'(x)$. [3]\n(b) Using integration by parts, find $\\int (\\ln x)^2 dx$. [4]" },
+            { id: "5.20-12", doc: "5.20", section: "Exam Style Short", marks: 6, gdc: "without", title: "Arctan x Integration by Parts", body: "Find $\\int \\arctan x dx$." },
+            { id: "5.20-13", doc: "5.20", section: "Exam Style Short", marks: 6, gdc: "without", title: "2x Arctan x Integration by Parts", body: "Find $\\int 2x \\arctan x dx$." },
+            { id: "5.20-14", doc: "5.20", section: "Exam Style Short", marks: 6, gdc: "without", title: "x^2 e^(-2x) Integration by Parts", body: "Find $\\int \\frac{x^2}{e^{2x}} dx$." },
+            { id: "5.20-15", doc: "5.20", section: "Exam Style Short", marks: 6, gdc: "without", title: "x^2 ln x Definite Integral", body: "(a) Use integration by parts to find $\\int x^2 \\ln x dx$.\n(b) Evaluate $\\int_{1}^{2} x^2 \\ln x dx$." },
+            { id: "5.20-16", doc: "5.20", section: "Exam Style Short", marks: 5, gdc: "without", title: "x^5 ln x Definite Integral to e", body: "Calculate exact value of $\\int_{1}^{e} x^5 \\ln x dx$." },
+            { id: "5.20-17", doc: "5.20", section: "Exam Style Short", marks: 6, gdc: "without", title: "Exact Trig Product Definite Integral", body: "Show that $\\int_{0}^{\\pi/6} x \\sin 2x dx = \\frac{\\sqrt{3}}{8} - \\frac{\\pi}{24}$." },
+            { id: "5.20-18", doc: "5.20", section: "Exam Style Short", marks: 7, gdc: "without", title: "Arcsin x Definite Integral to Parameter a", body: "Find $\\int_{0}^{a} \\arcsin x dx$ for $0 < a < 1$." },
+            { id: "5.20-19", doc: "5.20", section: "Exam Style Long", marks: 24, gdc: "without", title: "General Logarithmic Reduction Formulas", body: "(a) Find $I_n = \\int x^n \\ln x dx$ for $n \\neq -1$. [4]\n(b) Evaluate $\\int x^5 \\ln x dx$, $\\int \\frac{\\ln x}{x^5} dx$, $\\int \\sqrt{x}\\ln x dx$. [6]\n(c) Find $J_n = \\int \\frac{(\\ln x)^n}{x} dx$. [3]\n(d) Evaluate $\\int \\frac{(\\ln x)^5}{x} dx$, $\\int \\frac{1}{x(\\ln x)^5} dx$, $\\int \\frac{\\sqrt{\\ln x}}{x} dx$. [6]\n(e) Find $\\int \\left(\\frac{\\ln x}{x^2} + \\frac{(\\ln x)^2}{x}\\right) dx$. [5]" },
+            { id: "5.20-20", doc: "5.20", section: "Exam Style Long", marks: 16, gdc: "without", title: "System of Reduction Formulas for x^n sin x", body: "Let $A_n = \\int x^n \\sin x dx$ and $B_n = \\int x^n \\cos x dx$.\n(a) Find $A_0$ and $B_0$. [2]\n(b) Express $A_n$ in terms of $B_{n-1}$. [2]\n(c) Express $B_n$ in terms of $A_{n-1}$. [2]\n(d) Express $A_n$ in terms of $A_{n-2}$ and $B_n$ in terms of $B_{n-2}$. [5]\n(e) Find $A_1, A_2, A_3$. [5]" },
+            { id: "5.20-21", doc: "5.20", section: "Exam Style Long", marks: 28, gdc: "without", title: "Sin^n x Reduction & Double Angle Methods", body: "Let $I_n = \\int \\sin^n x dx$.\n(a) Find $I_0$ and $I_1$. [4]\n(b) Express $I_n$ in terms of $I_{n-2}$ by parts. [4]\n(c) Find $I_2, I_3, I_4, I_5$ using recursive relation. [4]\n(d) Find $I_2, I_4$ using double angle identities. [8]\n(e) Find $I_3, I_5$ using substitution $u = \\cos x$. [8]" },
+
+            // 5.21 Further Areas and Volumes
+            { id: "5.21-1", doc: "5.21", section: "Practice Questions", marks: 12, gdc: "without", title: "Log Curve Area & Volume of Revolution", body: "(a) Find $\\int \\ln x dx$ and $\\int (\\ln x)^2 dx$. [6]\n(b) Find area under $y = \\ln x$ from $1$ to $e$. [3]\n(c) Find volume generated when region is rotated $2\\pi$ about x-axis. [3]" },
+            { id: "5.21-2", doc: "5.21", section: "Practice Questions", marks: 13, gdc: "without", title: "Sin and Cos Intersections Area & Volume", body: "Curves $y = \\sin x$ and $y = \\cos x$.\n(a) Find area A (from $x=0$ to intersection $\\pi/4$). [3]\n(b) Find area B (from $\\pi/4$ to $\\pi/2$). [4]\n(c) Find volume generated rotating region A about x-axis. [4]\n(d) Write volume expression for region B rotated about x-axis. [2]" },
+            { id: "5.21-3", doc: "5.21", section: "Practice Questions", marks: 13, gdc: "without", title: "Cone Generation via x-axis & y-axis Rotations", body: "Triangular region bounded by $y = 8 - 2x$ and axes.\n(a) Complete geometry table for Area, $V_x$, $V_y$. [5]\n(b) Express Area, $V_x$, $V_y$ as definite integrals with respect to $x$ and $y$. [8]" },
+            { id: "5.21-4", doc: "5.21", section: "Practice Questions", marks: 24, gdc: "with", title: "Dual Parabola Enclosed Areas & Volumes Table", body: "Curves $y = x^2$ and $y = 8 - x^2$.\n(a) Formulate and compute Area A and Area B using $dx$ and $dy$. [12]\n(b) Formulate and compute Volumes of revolution about x-axis and y-axis for regions A and B. [12]" },
+            { id: "5.21-5", doc: "5.21", section: "Practice Questions", marks: 6, gdc: "without", title: "General Right Circular Cone Volume Proof", body: "Line through origin and $(h, r)$.\n(a) Show line equation is $y = \\frac{r}{h}x$. [2]\n(b) Prove cone volume formula $V = \\frac{1}{3}\\pi r^2 h$ using integration. [4]" },
+            { id: "5.21-6", doc: "5.21", section: "Practice Questions", marks: 20, gdc: "without", title: "Triple Boundary Region Area & Dual Axes Volume", body: "Curves $y = e^x$, $y = 4$, $y = 20 - 4x$.\n(a) Sketch region R with intercepts and intersection points. [5]\n(b) Find exact area of R. [5]\n(c) Find exact volume of solid generated by 2-radian rotation about x-axis. [5]\n(d) Express and evaluate volume generated by 2-radian rotation about y-axis. [5]" },
+            { id: "5.21-7", doc: "5.21", section: "Exam Style Short", marks: 4, gdc: "without", title: "Parabola 360-degree Volume of Revolution", body: "Graph of $y = 2x - x^2$ from $x=0$ to $x=2$.\n(a) Write down volume expression rotated $360^\\circ$ about x-axis. [2]\n(b) Calculate volume. [2]" },
+            { id: "5.21-8", doc: "5.21", section: "Exam Style Short", marks: 5, gdc: "with", title: "Square Root Curve Solid Volume Limit Parameter", body: "Region bounded by $f(x) = \\sqrt{x}$, $x=a$, x-axis. Revolved $360^\\circ$ about x-axis gives volume $0.845\\pi$. Find $a$." },
+            { id: "5.21-9", doc: "5.21", section: "Exam Style Short", marks: 4, gdc: "with", title: "Rational Exponential Volume of Revolution", body: "Function $f(x) = e^{2x-1} + \\frac{5}{2x-1}$. Region between $x=1$ and $x=1.5$ rotated $360^\\circ$ about x-axis. Express and evaluate volume V." },
+            { id: "5.21-10", doc: "5.21", section: "Exam Style Short", marks: 7, gdc: "without", title: "Exponential Square Root Volume Proof", body: "Graph $y = e^{x/2}$.\n(a) Find y-intercept P. [2]\n(b) Write integral for volume rotated $360^\\circ$ about x-axis between $x=0$ and $x=\\ln 2$. [2]\n(c) Show volume is $\\pi$. [3]" },
+            { id: "5.21-11", doc: "5.21", section: "Exam Style Short", marks: 6, gdc: "without", title: "Trig Power Volume of Revolution", body: "(a) Find $\\int 3\\sin^2 x \\cos x dx$. [3]\n(b) For $g(x) = \\sqrt{3}\\sin x(\\cos x)^{1/2}$ on $[0, \\pi/2]$, find volume generated by $2\\pi$ rotation about x-axis. [3]" },
+            { id: "5.21-12", doc: "5.21", section: "Exam Style Short", marks: 6, gdc: "with", title: "Sin 3x Volume of Revolution", body: "Graph $y = \\sin 3x$ on $[0, \\pi/4]$ rotated $2\\pi$ about x-axis. Find volume of solid formed." },
+            { id: "5.21-13", doc: "5.21", section: "Exam Style Short", marks: 9, gdc: "with", title: "Log Rational Function Area & Volume", body: "Function $f(x) = \\frac{\\ln x}{x^3}$ for $x \\ge 1$.\n(a) Find volume of solid generated by revolving region R (from $x=1$ to $x=3$) $360^\\circ$ about x-axis. [3]\n(b) Show area of R is $\\frac{1}{18}(4 - \\ln 3)$. [6]" },
+            { id: "5.21-14", doc: "5.21", section: "Exam Style Short", marks: 4, gdc: "without", title: "e^x Solid Volume to Upper Limit k", body: "Area between $y = e^x$ and x-axis from $x=0$ to $x=k$ rotated $360^\\circ$ about x-axis. Find volume in terms of $k$ and $e$." },
+            { id: "5.21-15", doc: "5.21", section: "Exam Style Short", marks: 6, gdc: "without", title: "Implicit Parabola Volume of Revolution", body: "Region bounded by axes and $y^2 = 8a(2a-x), a > 0$. Find volume when rotated $360^\\circ$ about x-axis in terms of $a$." },
+            { id: "5.21-16", doc: "5.21", section: "Exam Style Short", marks: 10, gdc: "without", title: "Parabola Line Enclosed Area & Multi-Axis Volume", body: "Region $y \\ge x^2+2$ and $y \\le ax+2, a > 0$.\n(a) Find area of region. [3]\n(b) Find volume rotated $360^\\circ$ about x-axis in terms of $a$. [4]\n(c) Express volume rotated $360^\\circ$ about y-axis. [3]" },
+            { id: "5.21-17", doc: "5.21", section: "Exam Style Short", marks: 6, gdc: "without", title: "(ln x)/x Volume of Revolution", body: "Region bounded by $y = \\frac{\\ln x}{x}$, $x=1, x=e, y=0$ rotated $2\\pi$ about x-axis. Find volume generated." },
+            { id: "5.21-18", doc: "5.21", section: "Exam Style Short", marks: 6, gdc: "without", title: "Dual Power Curves Parameter from Area", body: "Region R enclosed by $y^2 = kx$ and $x^2 = ky, k > 0$. Given Area is 12, find $k$." },
+            { id: "5.21-19", doc: "5.21", section: "Exam Style Long", marks: 12, gdc: "without", title: "Exponential General Parameter Solid Volume Proof", body: "Consider $y = e^{-kx}$.\n(a) Show $\\int_{0}^{1} e^{-kx} dx = \\frac{1}{k}(1 - e^{-k})$. [3]\n(b) For $k=0.5$, sketch and find area. [5]\n(c) Show volume rotated about x-axis is $\\frac{\\pi}{2k}(1 - e^{-2k})$. [4]" },
+            { id: "5.21-20", doc: "5.21", section: "Exam Style Long", marks: 15, gdc: "with", title: "Exponential and Linear Max Distance & Volume", body: "Functions $f(x) = 1 + e^{2x}, g(x) = 10x + 2$.\n(a) Find intersection $a$, vertical distance expression $p(x)$, $x$ for max $p$, and max $p$. [8]\n(b) Find area of enclosed region R. [3]\n(c) Find volume generated when R rotated $2\\pi$ about x-axis. [4]" },
+            { id: "5.21-21", doc: "5.21", section: "Exam Style Long", marks: 21, gdc: "with", title: "(ln x)/x Extremum, Inflexion, Area & Volume", body: "Function $f(x) = \\frac{\\ln x}{x}, x \\ge 1$.\n(a) Show single max point and state exact coords. [9]\n(b) Find x-coord of inflexion point P. [3]\n(c) Find exact area bounded from $x=1$ to $x=5$. [6]\n(d) Find volume generated rotating region $2\\pi$ about x-axis. [3]" },
+            { id: "5.21-22", doc: "5.21", section: "Exam Style Long", marks: 20, gdc: "with", title: "Parametric Log-Linear Function Family Analysis", body: "Let $f_k(x) = x \\ln x - kx$ for $x > 0$.\n(a) Find derivative $f_k'(x)$. [2]\n(b) Find increasing interval. [2]\n(c) Show stationary point at $x = e^{k-1}$ and find x-intercepts. [4]\n(d) Find enclosed area under axis. [5]\n(e) Find tangent equation at x-intercept A. [2]\n(f) Prove area of tangent triangle is twice enclosed curve area. [2]\n(g) Show x-intercepts for consecutive $k$ form geometric sequence. [3]" },
+            { id: "5.21-23", doc: "5.21", section: "Exam Style Long", marks: 16, gdc: "with", title: "Log Quotient Absolute Value Curve Analysis", body: "Let $f(x) = \\ln|x^5 - 3x^2|$.\n(a) Sketch graph, count zeros, show asymptotes, and find zeros. [5]\n(b) Find exact undefined points $a, b$. [3]\n(c) Find $f'(x)$ and state domain. [3]\n(d) Find exact x-coord of local max. [3]\n(e) Write integral for enclosed area. [2]" },
+            { id: "5.21-24", doc: "5.21", section: "Exam Style Long", marks: 24, gdc: "without", title: "Cos^2 Double Angle Proof & Secant Cosine Solid Volume", body: "(a) Prove $\\cos^2\\theta = \\frac{\\cos 2\\theta+1}{2}$. [3]\n(b) Find $\\int \\cos^2 x dx$. [4]\n(c) For $f(x) = 4\\cos x, g(x) = \\sec x$, find exact intersection coords. [4]\n(d) Sketch and shade enclosed region R. [3]\n(e) Formulate and compute exact volume when R is rotated $2\\pi$ about x-axis. [10]" },
+            { id: "5.21-25", doc: "5.21", section: "Exam Style Long", marks: 21, gdc: "with", title: "Radical Inverse Trig Combination Analysis", body: "Let $f(x) = x\\sqrt{9-x^2} + 2\\arcsin(x/3)$.\n(a) Find largest domain D. [2]\n(b) Find volume generated rotating region to $x=2.8$ about x-axis. [3]\n(c) Find simplified $f'(x)$. [5]\n(d) Show $\\int_{-p}^{p} \\frac{11-2x^2}{\\sqrt{9-x^2}} dx = 2p\\sqrt{9-p^2} + 4\\arcsin(p/3)$. [2]\n(e) Find $p$ that maximizes integral. [2]\n(f) Find $f''(x)$ and justify inflexion point at $x=0$ but not at $\\pm\\sqrt{25/2}$. [7]" },
+            { id: "5.21-26", doc: "5.21", section: "Exam Style Long", marks: 11, gdc: "without", title: "Trig Linear Product Arithmetic Sequence Areas", body: "Let $f(x) = x\\cos 3x$.\n(a) Use parts to show $\\int f(x) dx = \\frac{1}{3}x\\sin 3x + \\frac{1}{9}\\cos 3x + C$. [3]\n(b) Calculate exact areas in terms of $\\pi$ for intervals $[\\pi/6, 3\\pi/6]$, $[3\\pi/6, 5\\pi/6]$, $[5\\pi/6, 7\\pi/6]$. [4]\n(c) Given areas form arithmetic sequence, find total area expression for $n$ terms. [4]" },
+
+            // 5.22 Differential Equations
+            { id: "5.22-1", doc: "5.22", section: "Practice Questions", marks: 5, gdc: "without", title: "Basic Polynomial First Order DE", body: "Consider $\\frac{dy}{dx} = 4x+1$ with $y(3)=1$.\n(a) Find general solution. [2]\n(b) Find particular solution. [3]" },
+            { id: "5.22-2", doc: "5.22", section: "Practice Questions", marks: 7, gdc: "without", title: "Separable Variables Differential Equation", body: "Consider $\\frac{dy}{dx} = (4x+1)y^2$ with $y(3)=1$.\n(a) Find general solution $y=f(x)$. [4]\n(b) Find particular solution. [3]" },
+            { id: "5.22-3", doc: "5.22", section: "Practice Questions", marks: 7, gdc: "without", title: "Homogeneous Cubic Rational DE", body: "Solve homogeneous DE $\\frac{dy}{dx} = \\frac{x^3+4y^3}{3xy^2}$ with $y(1)=2$. Express solution as $y=f(x)$." },
+            { id: "5.22-4", doc: "5.22", section: "Practice Questions", marks: 7, gdc: "without", title: "First Order Linear DE Integrating Factor", body: "Consider $\\frac{dy}{dx} + \\frac{y}{x} = 10x^3$ with $y(1)=8$.\n(a) Find integrating factor. [2]\n(b) Solve differential equation. [5]" },
+            { id: "5.22-5", doc: "5.22", section: "Practice Questions", marks: 11, gdc: "without", title: "Euler's Method vs Analytical Solution", body: "Exact solution to $\\frac{dy}{dx} = \\frac{x^3+4y^3}{3xy^2}, y(1)=2$ is $y = x\\sqrt[3]{9x-1}$.\n(a) Find exact $y(2)$ to 3 d.p. [1]\n(b) Complete Euler table ($h=0.2$) for $y(2)$. [8]\n(c) Find refined Euler approximation with step $h=0.01$. [2]" },
+            { id: "5.22-6", doc: "5.22", section: "Practice Questions", marks: 8, gdc: "without", title: "Implicit Circle Differentiation & Recovery", body: "Unit circle $x^2 + y^2 = 1$.\n(a) Use implicit differentiation to show $\\frac{dy}{dx} = -\\frac{x}{y}$. [3]\n(b) Solve $\\frac{dy}{dx} = -\\frac{x}{y}$ given curve passes through $(1,0)$ to derive unit circle equation. [5]" },
+            { id: "5.22-7", doc: "5.22", section: "Practice Questions", marks: 12, gdc: "without", title: "Proportionality to Square Rate DE", body: "Gradient is proportional to square of $y$.\n(a) Write DE. [2]\n(b) Find general solution. [3]\n(c) Given $y(0)=1, y(1)=1/3$, express $y$ in terms of $x$. [5]\n(d) Reformulate as rate of change of P with time. [2]" },
+            { id: "5.22-8", doc: "5.22", section: "Exam Style Short", marks: 5, gdc: "without", title: "Basic Exponential Linear DE", body: "Given $\\frac{dy}{dx} = e^x - 2x$ and $y=3$ when $x=0$, find $y(x)$." },
+            { id: "5.22-9", doc: "5.22", section: "Exam Style Short", marks: 6, gdc: "without", title: "Separable DE with Quadratic y", body: "Solve $\\frac{dy}{dx} = 2xy^2$ given $y=1$ when $x=0$. Give answer as $y=f(x)$." },
+            { id: "5.22-10", doc: "5.22", section: "Exam Style Short", marks: 6, gdc: "without", title: "Separable DE with 1 + y^2", body: "Solve $x\\frac{dy}{dx} - y^2 = 1$ given $y=0$ when $x=2$." },
+            { id: "5.22-11", doc: "5.22", section: "Exam Style Short", marks: 6, gdc: "without", title: "Separable DE with xy dy/dx", body: "Solve $xy\\frac{dy}{dx} = 1 + y^2$ given $y=0$ when $x=2$." },
+            { id: "5.22-12", doc: "5.22", section: "Exam Style Short", marks: 6, gdc: "without", title: "Separable DE with (x^2 + 1)", body: "Solve $(x^2+1)\\frac{dy}{dx} - xy = 0$ for $x>0, y>0$, given $y=1$ when $x=1$." },
+            { id: "5.22-13", doc: "5.22", section: "Exam Style Short", marks: 6, gdc: "without", title: "Shifted Linear Separable DE", body: "Solve $(x+2)^2\\frac{dy}{dx} = 4xy$ for $x > -2$, given $y=1$ when $x=-1$." },
+            { id: "5.22-14", doc: "5.22", section: "Exam Style Short", marks: 6, gdc: "without", title: "Arctan Form Separable DE", body: "Solve $\\frac{dy}{dx} = \\frac{1+y^2}{1+x^2}$ given $y=\\sqrt{3}$ when $x=\\frac{\\sqrt{3}}{3}$. Form $y = \\frac{ax+\\sqrt{a}}{a-x\\sqrt{a}}$." },
+            { id: "5.22-15", doc: "5.22", section: "Exam Style Short", marks: 7, gdc: "without", title: "Partial Fractions Logistic Growth DE", body: "(a) Show $\\frac{1}{x(5-x)} = \\frac{1}{5}(\\frac{1}{x} + \\frac{1}{5-x})$. [1]\n(b) Find general solution of $\\frac{dx}{dt} = kx(5-x)$ for $0 < x < 5$. [6]" },
+            { id: "5.22-16", doc: "5.22", section: "Exam Style Short", marks: 6, gdc: "without", title: "Work-Energy Differential Equation Mechanics", body: "Equation of motion $kx = mv\\frac{dv}{dx}$. Initial condition $v(0) = v_0$. Find $v$ when $x=2$." },
+            { id: "5.22-17", doc: "5.22", section: "Exam Style Short", marks: 6, gdc: "with", title: "Radioactive Decay Half-Life DE", body: "Radioactive material decays at rate proportional to amount present. If 50g decays to 48g in 10 years, find half-life." },
+            { id: "5.22-18", doc: "5.22", section: "Exam Style Short", marks: 6, gdc: "without", title: "Balloon Air Release Exponential Decay DE", body: "Volume rate $\\frac{dv}{dt} = -kv$.\n(a) Initial volume $v_0$, find expression for $v(t)$. [3]\n(b) Find time when volume is $v_0/2$. [3]" },
+            { id: "5.22-19", doc: "5.22", section: "Exam Style Short", marks: 6, gdc: "without", title: "Geometric Tangent Intercept DE", body: "Tangent at $P(x,y)$ meets x-axis at $Q(x-1, 0)$. Curve meets y-axis at $R(0, 2)$. Find curve equation." },
+            { id: "5.22-20", doc: "5.22", section: "Exam Style Short", marks: 5, gdc: "without", title: "Basic Homogeneous DE Solution Proof", body: "Show solution of $\\frac{dy}{dx} = \\frac{y}{x} + 1, x>0$ with $y(e)=0$ is $y = x(\\ln x - 1)$." },
+            { id: "5.22-21", doc: "5.22", section: "Exam Style Short", marks: 11, gdc: "without", title: "Homogeneous Quadratic DE Type 1", body: "Solve $x^2\\frac{dy}{dx} = y^2 + 3xy + 2x^2$ given $y=-1$ when $x=1$." },
+            { id: "5.22-22", doc: "5.22", section: "Exam Style Short", marks: 9, gdc: "without", title: "Homogeneous Quadratic DE Type 2", body: "Solve $x^2\\frac{dy}{dx} = y^2 + xy + 4x^2$ given $y=2$ when $x=1$." },
+            { id: "5.22-23", doc: "5.22", section: "Exam Style Short", marks: 10, gdc: "with", title: "Homogeneous Rational DE Evaluation", body: "Consider $\\frac{dy}{dx} = \\frac{y^2+x^2}{2x^2}$ with $y(1)=-1$.\n(i) Solve DE as $y=f(x)$. [9]\n(ii) Find $y(2)$. [1]" },
+            { id: "5.22-24", doc: "5.22", section: "Exam Style Short", marks: 8, gdc: "without", title: "Homogeneous Fractional Square DE", body: "Solve $\\frac{dy}{dx} = \\frac{y}{x} + \\frac{y^2}{x^2}$ for $x>0$ given $y=2$ when $x=1$." },
+            { id: "5.22-25", doc: "5.22", section: "Exam Style Short", marks: 10, gdc: "without", title: "First Order Linear DE with Tan x", body: "Solve $\\frac{dy}{dx} - y\\tan x = \\cos x$ given $y=0$ when $x=\\pi$." },
+            { id: "5.22-26", doc: "5.22", section: "Exam Style Short", marks: 8, gdc: "without", title: "First Order Linear DE with Trig Coefficients", body: "Solve $(cos x - \\sin x)\\frac{dy}{dx} + (\\cos x + \\sin x)y = \\cos x + \\sin x$ given $y=-1$ at $x=\\pi/2$." },
+            { id: "5.22-27", doc: "5.22", section: "Exam Style Short", marks: 11, gdc: "with", title: "Linear DE Max Value Optimization", body: "Given $\\frac{dy}{dx} + 2y\\tan x = \\sin x$ and $y(0)=0$ at $x=\\pi/3$, find maximum value of $y$." },
+            { id: "5.22-28", doc: "5.22", section: "Exam Style Short", marks: 13, gdc: "without", title: "First Order Linear DE Cubic Rational", body: "(a) Find integrating factor for $x\\frac{dy}{dx} - 2y = \\frac{x^3}{x^2+1}$. [5]\n(b) Solve given $y(1)=1$. [8]" },
+            { id: "5.22-29", doc: "5.22", section: "Exam Style Short", marks: 9, gdc: "without", title: "Linear Integrating Factor Nonlinear x DE", body: "Solve DE $\\frac{dy}{dx} = 2x(1+x^2-y)$ passing through $(1, 2)$." },
+            { id: "5.22-30", doc: "5.22", section: "Exam Style Short", marks: 10, gdc: "without", title: "Partial Fraction Linear DE", body: "(a) Express $\\frac{1}{(x+1)(x+2)}$ in partial fractions. [3]\n(b) Solve $(x+1)(x+2)\\frac{dy}{dx} + y = x+1$. [7]" },
+            { id: "5.22-31", doc: "5.22", section: "Exam Style Short", marks: 6, gdc: "with", title: "Euler's Method Step-by-Step Table", body: "DE $\\frac{dy}{dx} = x^2 + y^2, y(0)=1$. Step length $h=0.1$.\n(a) Show first two steps analytically. [3]\n(b) Find approximation for $y(0.4)$ with table of intermediate values. [3]" },
+            { id: "5.22-32", doc: "5.22", section: "Exam Style Short", marks: 4, gdc: "with", title: "Euler's Method Direct Calculation", body: "Let $\\frac{dy}{dx} - 2y^2 = e^x, y(0)=1$. Use Euler's method ($h=0.1$) to find $y(0.4)$." },
+            { id: "5.22-33", doc: "5.22", section: "Exam Style Short", marks: 5, gdc: "with", title: "Euler's Method Estimation for Rational DE", body: "DE $\\frac{dy}{dx} = \\frac{y^2+x^2}{2x^2}, y(1)=-1$. Use Euler's method ($h=0.25$) to estimate $y(2)$." },
+            { id: "5.22-34", doc: "5.22", section: "Exam Style Short", marks: 6, gdc: "with", title: "Euler's Method Accuracy Improvement", body: "(a) Use Euler's method ($h=0.1$) for $\\frac{dy}{dx} = 2x(1+x^2-y), y(1)=2$ to find $y(1.3)$. [5]\n(b) How can a more accurate answer be obtained? [1]" },
+            { id: "5.22-35", doc: "5.22", section: "Exam Style Long", marks: 17, gdc: "with", title: "Linear DE Solution & Euler Method Comparison", body: "DE $\\frac{dy}{dx} + \\frac{xy}{4-x^2} = 1, y(0)=1$.\n(a) Solve using integrating factor to show $y = \\sqrt{4-x^2}(\\arcsin(x/2) + 1/2)$. [9]\n(b) Calculate exact $y(1)$ to 2 d.p. [1]\n(c) Use Euler's method ($h=0.25$) to find $y(1)$ to 2 d.p. [4]\n(d) Sketch graph and explain why Euler value exceeds true value. [3]" },
+            { id: "5.22-36", doc: "5.22", section: "Exam Style Long", marks: 18, gdc: "with", title: "Triple DE Solving Methods Comparison", body: "DE $\\frac{dy}{dx} = -\\frac{y}{x}, y(1)=2$.\n(a) Solve as (i) separable, (ii) homogeneous, (iii) linear. [12]\n(b) Find actual $y(2)$. [1]\n(c) Use Euler's method with $h=0.2$ and $h=0.01$ to approximate $y(2)$. [5]" },
+            { id: "5.22-37", doc: "5.22", section: "Exam Style Long", marks: 12, gdc: "without", title: "Reciprocal Derivative Transformation DE", body: "Consider $(u+3v^3)\\frac{dv}{du} = 2v$.\n(a) Classify DE type. [3]\n(b) Express $\\frac{du}{dv}$ in terms of $u$ and $v$. [2]\n(c) Solve DE to express $u=f(v)$. [7]" },
+
+            // 5.23 Maclaurin Series & Binomial Extension
+            { id: "5.23-1", doc: "5.23", section: "Practice Questions", marks: 7, gdc: "without", title: "Maclaurin Series for e^(2x) Dual Derivation", body: "Find Maclaurin series of $f(x) = e^{2x}$ up to $x^4$:\n(a) using general Maclaurin formula\n(b) substituting into standard $e^x$ series." },
+            { id: "5.23-2", doc: "5.23", section: "Practice Questions", marks: 8, gdc: "without", title: "Maclaurin Series vs Binomial Expansion (2+x)^3", body: "Find Maclaurin series of $f(x) = (2+x)^3$:\n(a) using general Maclaurin formula\n(b) using binomial theorem expansion." },
+            { id: "5.23-3", doc: "5.23", section: "Practice Questions", marks: 10, gdc: "without", title: "Extension of Binomial Theorem (2+x)^(-2)", body: "(a) Find Maclaurin series of $f(x) = (2+x)^{-2}$ up to $x^2$:\n(i) using general Maclaurin formula\n(ii) using extended binomial theorem. [8]\n(b) Write down convergence interval. [2]" },
+            { id: "5.23-4", doc: "5.23", section: "Practice Questions", marks: 9, gdc: "without", title: "Extended Binomial Series sqrt(2+x)", body: "Find Maclaurin series of $f(x) = \\sqrt{2+x}$ up to $x^2$:\n(a) using general Maclaurin formula [5]\n(b) using extended binomial theorem. [4]" },
+            { id: "5.23-5", doc: "5.23", section: "Practice Questions", marks: 7, gdc: "without", title: "Combining Standard Maclaurin Series", body: "Using standard series for $e^x, \\sin x, \\cos x$, find series up to specified powers:\n(a) $f(x) = \\sin x + \\cos x$ up to $x^5$ [1]\n(b) $f(x) = 24\\cos x - 6\\sin x$ up to $x^4$ [2]\n(c) $f(x) = e^x \\cos x$ up to $x^4$ [4]" },
+            { id: "5.23-6", doc: "5.23", section: "Practice Questions", marks: 17, gdc: "without", title: "Exponential Substitutions & Modifications", body: "Using $e^x = 1 + x + \\frac{x^2}{2!} + \\dots$, find series for:\n(a) $e^{-x}$ up to $x^4$ [2]\n(b) $e^{-x^2}$ up to $x^8$ [3]\n(c) $x e^x$ up to $x^4$ [2]\n(d) $x^2 e^{-x}$ up to $x^5$ [3]\n(e) $e^x + e^{-x}$ up to $x^5$ [3]\n(f) $e^x - e^{-x}$ up to $x^5$ [3]\n(g) $(x+1)e^{4x}$ up to $x^3$ [4]" },
+            { id: "5.23-7", doc: "5.23", section: "Practice Questions", marks: 17, gdc: "without", title: "Composite Exponential Series e^(sin x) & e^(cos x)", body: "(a) Find series for $e^{\\sin x}$ up to $x^4$.\n(b) For $e^{\\cos x}$:\n(i) write series for $\\cos x - 1$\n(ii) find series for $e^{\\cos x - 1}$\n(iii) find series for $e^{\\cos x}$." },
+            { id: "5.23-8", doc: "5.23", section: "Practice Questions", marks: 17, gdc: "without", title: "Calculus Derivation of Cosine Series from Sine", body: "Use $\\sin x = x - \\frac{x^3}{3!} + \\frac{x^5}{5!} - \\dots$ to find series for $\\cos x$:\n(a) by differentiation [2]\n(b) by integration. [4]" },
+            { id: "5.23-9", doc: "5.23", section: "Practice Questions", marks: 5, gdc: "without", title: "Geometric Series Derivation of Arctan x Series", body: "(a) Find sum of $1 - x^2 + x^4 - x^6 + \\dots$ [1]\n(b) Write series for $\\frac{1}{1+x^2}$. [1]\n(c) Find series for $\\arctan x$. [3]" },
+            { id: "5.23-10", doc: "5.23", section: "Practice Questions", marks: 12, gdc: "without", title: "L'Hopital vs Maclaurin Series Limits", body: "(a) Evaluate $\\lim_{x \\to 0} \\frac{6e^x - 6 - 6x + x^2}{2x^2}$:\n(i) using L'Hopital's Rule\n(ii) using Maclaurin series. [7]\n(b) Evaluate $\\lim_{x \\to 0} \\frac{e^{x^4} - 1}{x^3 \\sin x}$ using Maclaurin series. [5]" },
+            { id: "5.23-11", doc: "5.23", section: "Practice Questions", marks: 12, gdc: "without", title: "Differential Equation Maclaurin Series Approximation", body: "DE $\\frac{dy}{dx} = 3y - e^x$ with $y(0)=1$.\n(a) Find $y''$ and $y'''$ implicitly in form $Ay - Be^x$. [4]\n(b) Evaluate derivatives at $x=0$. [4]\n(c) Find Maclaurin series up to $x^3$. [2]\n(d) Compare exact solution $y = \\frac{e^x+e^{3x}}{2}$ with series approximation." },
+            { id: "5.23-12", doc: "5.23", section: "Practice Questions", marks: 14, gdc: "without", title: "Rational Function Expansion Methods", body: "(a) Expand $(1+x)^{-1}$ and $(2+x)^{-1}$ up to $x^3$. [5]\n(b) For $f(x) = \\frac{8}{x^2+3x+2}$:\n(i) expand product $8(1+x)^{-1}(2+x)^{-1}$\n(ii) expand partial fractions and sum expansions. [9]" },
+            { id: "5.23-13", doc: "5.23", section: "Exam Style Short", marks: 10, gdc: "without", title: "Logarithmic Shifted Series Derivation", body: "Let $f(x) = 9\\ln(x+3) + 5 - 9\\ln 3$.\n(a) Find first 3 derivatives. [5]\n(b) Find Maclaurin series up to $x^3$. [5]" },
+            { id: "5.23-14", doc: "5.23", section: "Exam Style Short", marks: 7, gdc: "without", title: "Substituted Trig Maclaurin Series", body: "(a) Find Maclaurin series of $\\cos(x^2)$ up to $x^8$. [3]\n(b) Find Maclaurin series of $\\sin(5x)$ up to $x^5$. [4]" },
+            { id: "5.23-15", doc: "5.23", section: "Exam Style Short", marks: 4, gdc: "without", title: "Radical Logarithmic Maclaurin Series", body: "Find Maclaurin series of $f(x) = \\ln\\sqrt{x+1}$ up to $x^3$." },
+            { id: "5.23-16", doc: "5.23", section: "Exam Style Short", marks: 5, gdc: "without", title: "Power Logarithmic Maclaurin Series", body: "Find Maclaurin series of $f(x) = \\ln(2x+1)^2$ up to $x^3$." },
+            { id: "5.23-17", doc: "5.23", section: "Exam Style Short", marks: 10, gdc: "without", title: "ln(1/(1-x)) Series & ln 2 Approximation", body: "Let $f(x) = \\ln(\\frac{1}{1-x})$.\n(a) State constant term. [1]\n(b) Find first 3 derivatives and show series is $x + \\frac{x^2}{2} + \\frac{x^3}{3}$. [6]\n(c) Use series to approximate $\\ln 2$. [3]" },
+            { id: "5.23-18", doc: "5.23", section: "Exam Style Short", marks: 12, gdc: "without", title: "ln(1 + sin x) Derivatives & Series", body: "Let $f(x) = \\ln(1+\\sin x)$.\n(a) Show $f''(x) = \\frac{-1}{1+\\sin x}$. [5]\n(b) Find 3rd and 4th derivatives. [4]\n(c) Find Maclaurin series up to $x^4$. [3]" },
+            { id: "5.23-19", doc: "5.23", section: "Exam Style Short", marks: 8, gdc: "without", title: "ln(1 + sin x) Series via Composition", body: "Find Maclaurin series for $\\ln(1+\\sin x)$ up to $x^4$ using standard series for $\\ln(1+u)$ and $\\sin x$." },
+            { id: "5.23-20", doc: "5.23", section: "Exam Style Short", marks: 10, gdc: "without", title: "ln(1 + e^x) Series & Limit Evaluation", body: "(a) Find first 3 terms of Maclaurin series for $\\ln(1+e^x)$. [6]\n(b) Determine $\\lim_{x \\to 0} \\frac{2\\ln(1+e^x) - x - \\ln 4}{x^2}$. [4]" },
+            { id: "5.23-21", doc: "5.23", section: "Exam Style Short", marks: 8, gdc: "without", title: "Nonlinear First Order DE Maclaurin Series", body: "Consider $\\frac{dy}{dx} = 3x^2 + y^2, y(0)=2$.\n(a) Show $y'' = 6x + 6x^2 y + 2y^3$. [3]\n(b) Find $y'''$. [2]\n(c) Find Maclaurin series solution up to $x^3$. [4]" },
+            { id: "5.23-22", doc: "5.23", section: "Exam Style Short", marks: 7, gdc: "without", title: "Trig Coefficient DE Series Approximation", body: "DE $\\frac{dy}{dx} - y\\tan x = \\cos x$.\n(a) Find Maclaurin series for $y$ up to $x^2$ given $y(0) = -\\pi/2$. [5]\n(b) Show approximation for $y(0.1)$ is $0.1 - \\frac{201\\pi}{400}$. [2]" },
+            { id: "5.23-23", doc: "5.23", section: "Exam Style Short", marks: 7, gdc: "without", title: "Reciprocal Linear Extended Binomial Series", body: "(a) Expand $f(x) = \\frac{1}{3x+5}$ up to $x^3$ using extended binomial theorem. [5]\n(b) Find convergence interval. [2]" },
+            { id: "5.23-24", doc: "5.23", section: "Exam Style Short", marks: 8, gdc: "without", title: "Square Root Linear Extended Binomial Series", body: "(a) Expand $f(x) = \\sqrt{3x+5}$ up to $x^3$ using extended binomial theorem. [6]\n(b) Find convergence interval. [2]" },
+            { id: "5.23-25", doc: "5.23", section: "Exam Style Short", marks: 9, gdc: "without", title: "Radical Composite & Differentiation Series", body: "(a) Expand $f(x) = \\sqrt{x^2+1}$ up to $x^6$. [4]\n(b) Find series for $16x\\sqrt{x^2+1}$ up to $x^7$. [2]\n(c) Differentiate to find series for $\\frac{x}{\\sqrt{x^2+1}}$ up to $x^5$. [3]" },
+            { id: "5.23-26", doc: "5.23", section: "Exam Style Short", marks: 8, gdc: "without", title: "Algebraic Fraction Extended Binomial Expansion", body: "Find Maclaurin series for $f(x) = \\frac{(x+2)^2}{\\sqrt{x+1}}$ up to $x^3$." },
+            { id: "5.23-27", doc: "5.23", section: "Exam Style Short", marks: 8, gdc: "with", title: "Quotient Radical Extended Binomial Expansion", body: "Find Maclaurin series for $f(x) = \\frac{\\sqrt{x+4}}{(x+1)^3}$ up to $x^2$." },
+            { id: "5.23-28", doc: "5.23", section: "Exam Style Short", marks: 7, gdc: "with", title: "Gaussian Integration Approximation via Series", body: "(a) Find Maclaurin series for $e^{-x^2}$ up to $x^6$. [2]\n(b) Use series to approximate area under $e^{-x^2}$ between $x=-1$ and $x=1$ as $52/35$. [5]" },
+            { id: "5.23-29", doc: "5.23", section: "Exam Style Long", marks: 22, gdc: "without", title: "Log Trig Identities, Tangent Series & Limits", body: "Given series for $\\ln(1+\\sin x)$ up to $x^4$.\n(a) Deduce series for $\\ln(1-\\sin x)$, $\\ln\\cos x$, $\\ln\\sec x$. [8]\n(b) Differentiate $\\ln\\cos x$ to deduce series for $\\tan x$. [4]\n(c) Calculate limits $\\lim_{x \\to 0} \\frac{\\ln\\sec x}{x\\sqrt{x}}$ and $\\lim_{x \\to 0} \\frac{\\tan(x^2)}{\\ln\\cos x}$. [6]\n(d) Prove $\\ln 3 \\approx \\frac{\\pi}{3}(1 + \\frac{\\pi^2}{216})$. [4]" },
+            { id: "5.23-30", doc: "5.23", section: "Exam Style Long", marks: 14, gdc: "with", title: "ln cos x Maclaurin Series & ln 2 Approximation", body: "(a) Show first two non-zero terms of series for $y = \\ln\\cos x$ are $-\\frac{x^2}{2} - \\frac{x^4}{12}$. [8]\n(b) Use series to find approximation in terms of $\\pi$ for $\\ln 2$. [6]" }
+        ];
+
+        // Categories Configuration
+        const categories = [
+            { id: "all", label: "All Topics" },
+            { id: "5.9-5.10", label: "5.9-5.10 Indefinite Integrals" },
+            { id: "5.11", label: "5.11 Definite Integrals & Areas" },
+            { id: "5.12", label: "5.12 Kinematics" },
+            { id: "5.18-5.19", label: "5.18-5.19 More Integrals" },
+            { id: "5.20", label: "5.20 Integration by Parts" },
+            { id: "5.21", label: "5.21 Further Areas & Volumes" },
+            { id: "5.22", label: "5.22 Differential Equations" },
+            { id: "5.23", label: "5.23 Maclaurin & Binomial" }
+        ];
+
+        let activeCategory = "all";
+        let activeGdc = "all";
+        let searchQuery = "";
+
+        // DOM Elements
+        const categoryTabsContainer = document.getElementById("category-tabs");
+        const gdcFilterSelect = document.getElementById("gdc-filter");
+        const searchInput = document.getElementById("search-input");
+        const questionsContainer = document.getElementById("questions-container");
+        const questionCountBadge = document.getElementById("question-count");
+
+        // Render Tabs
+        function initTabs() {
+            categoryTabsContainer.innerHTML = categories.map(cat => `
+                <button 
+                    onclick="setCategory('${cat.id}')"
+                    class="tab-btn px-3 py-2 text-xs sm:text-sm font-medium whitespace-nowrap border-b-2 border-transparent hover:text-blue-600 transition-colors ${activeCategory === cat.id ? 'active' : 'text-slate-500'}"
+                >
+                    ${cat.label}
+                </button>
+            `).join('');
+        }
+
+        function setCategory(catId) {
+            activeCategory = catId;
+            initTabs();
+            renderQuestions();
+        }
+
+        // Filter and Render Questions
+        function renderQuestions() {
+            const filtered = questionsData.filter(q => {
+                const matchesCategory = activeCategory === "all" || q.doc === activeCategory;
+                const matchesGdc = activeGdc === "all" || q.gdc === activeGdc;
+                const matchesSearch = searchQuery === "" || 
+                    q.title.toLowerCase().includes(searchQuery.toLowerCase()) || 
+                    q.body.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                    q.id.toLowerCase().includes(searchQuery.toLowerCase());
+
+                return matchesCategory && matchesGdc && matchesSearch;
+            });
+
+            questionCountBadge.textContent = `${filtered.length} of ${questionsData.length} Questions`;
+
+            if (filtered.length === 0) {
+                questionsContainer.innerHTML = `
+                    <div class="bg-white p-12 text-center rounded-xl border border-slate-200">
+                        <p class="text-slate-500 text-base">No questions found matching your criteria.</p>
+                        <button onclick="resetFilters()" class="mt-4 px-4 py-2 bg-blue-50 text-blue-600 text-sm font-medium rounded-lg hover:bg-blue-100 transition-colors">Reset Filters</button>
+                    </div>
+                `;
+                return;
+            }
+
+            questionsContainer.innerHTML = filtered.map(q => `
+                <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm hover:shadow-md transition-shadow">
+                    <div class="flex flex-wrap justify-between items-start gap-2 border-b border-slate-100 pb-3 mb-4">
+                        <div class="flex items-center gap-2 flex-wrap">
+                            <span class="bg-slate-100 text-slate-700 font-semibold text-xs px-2.5 py-1 rounded">Q${q.id}</span>
+                            <span class="bg-blue-50 text-blue-700 text-xs px-2.5 py-1 rounded font-medium">${q.doc}</span>
+                            <span class="text-xs text-slate-500 font-medium">${q.section}</span>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <span class="text-xs font-semibold ${q.gdc === 'with' ? 'bg-amber-50 text-amber-700 border border-amber-200' : 'bg-emerald-50 text-emerald-700 border border-emerald-200'} px-2.5 py-0.5 rounded-full">
+                                ${q.gdc === 'with' ? 'with GDC' : 'without GDC'}
+                            </span>
+                            <span class="text-xs font-bold bg-slate-800 text-white px-2 py-0.5 rounded">[${q.marks} marks]</span>
+                        </div>
+                    </div>
+                    
+                    <h3 class="text-base font-bold text-slate-900 mb-2">${q.title}</h3>
+                    
+                    <div class="text-slate-700 text-sm whitespace-pre-line leading-relaxed font-normal bg-slate-50 p-4 rounded-lg border border-slate-100">
+                        ${q.body}
+                    </div>
+                </div>
+            `).join('');
+
+            // Re-render KaTeX math elements
+            if (window.renderMathInElement) {
+                renderMathInElement(questionsContainer, {
+                    delimiters: [
+                        {left: '$$', right: '$$', display: true},
+                        {left: '$', right: '$', display: false}
+                    ],
+                    throwOnError: false
+                });
+            }
+        }
+
+        function resetFilters() {
+            activeCategory = "all";
+            activeGdc = "all";
+            searchQuery = "";
+            gdcFilterSelect.value = "all";
+            searchInput.value = "";
+            initTabs();
+            renderQuestions();
+        }
+
+        // Event Listeners
+        gdcFilterSelect.addEventListener("change", (e) => {
+            activeGdc = e.target.value;
+            renderQuestions();
+        });
+
+        searchInput.addEventListener("input", (e) => {
+            searchQuery = e.target.value;
+            renderQuestions();
+        });
+
+        // Initialize App
+        document.addEventListener("DOMContentLoaded", () => {
+            initTabs();
+            renderQuestions();
+        });
+    </script>
+</body>
+</html>
